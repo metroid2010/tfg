@@ -1,0 +1,23 @@
+
+
+estructura:
+
+- portada
+- resumen + palabras clave
+- agradecimientos
+- indices
+	- contenido
+	- ilustraciones, tablas, figuras
+- lista abreviaturas
+- cuerpo
+	- introduccion
+	- metodos
+	- resultados
+	- discusion + conclusiones
+- marco regulador
+- entorno socieconomico
+- bibliografia
+- anexos
+	- tabla datos adicionales
+	- formulario
+	
