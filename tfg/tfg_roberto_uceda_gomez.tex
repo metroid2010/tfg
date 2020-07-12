@@ -138,16 +138,6 @@ hmargin=3cm
 	font=small		
 }
 
-% Diseño de figuras para ciencias sociales y humanidades
-%\captionsetup[figure]{
-%	format=hang,
-%	name=Figura,
-%	singlelinecheck=off,
-%	labelsep=period,
-%	labelfont=small,
-%	font=small		
-%}
-
 
 % NOTAS A PIE DE PÁGINA
 \usepackage{chngcntr} %para numeración contínua de las notas al pie
@@ -197,10 +187,6 @@ hmargin=3cm
 % CONFIGURACIÓN PARA LA BIBLIOGRAFÍA IEEE
 \usepackage[backend=biber, style=ieee, isbn=false,sortcites, maxbibnames=5, minbibnames=1]{biblatex} % Configuración para el estilo de citas de IEEE, recomendado para el área de ingeniería. "maxbibnames" indica que a partir de 5 autores trunque la lista en el primero (minbibnames) y añada "et al." tal y como se utiliza en el estilo IEEE.
 
-%CONFIGURACIÓN PARA LA BIBLIOGRAFÍA APA
-%\usepackage[style=apa, backend=biber, natbib=true, hyperref=true, uniquelist=false, sortcites]{biblatex}
-%\DeclareLanguageMapping{spanish}{spanish-apa}
-
 % Añadimos las siguientes indicaciones para mejorar la adaptación de los estilos en español
 \DefineBibliographyStrings{spanish}{%
 	andothers = {et\addabbrvspace al\adddot}
@@ -216,7 +202,10 @@ hmargin=3cm
 	page = {p.\adddot}
 }
 
-\addbibresource{bibliografia/bibliografia.bib} % llama al archivo bibliografia.bib en el que debería estar la bibliografía utilizada
+\addbibresource{bib/bibliography.bib} % llama al archivo bibliografia.bib en el que debería estar la bibliografía utilizada
+
+% my settings
+\linespread{1.5}
 
 
 %-------------
@@ -225,7 +214,7 @@ hmargin=3cm
 
 \begin{document}
 \pagenumbering{roman} % Se utilizan cifras romanas en la numeración de las páginas previas al cuerpo del trabajo
-	
+
 %----------
 %	PORTADA
 %----------	
@@ -340,10 +329,9 @@ hmargin=3cm
 	\begin{center}
 		\caption{Lista de abreviaturas}
 		\label{tab:table1}
-		\begin{tabular}{>{\bf}p{4cm}|p{13cm}}
-			1 & 1110.1 \\
-			2 & 10.1 \\
-			3 & 23.113231 \\
+		\begin{tabular}{>{\bf}p{4cm}|p{12cm}}
+			ADC & Analog to Digital Converter, Convertidor Analógico-Digital \\
+			
 		\end{tabular}
 	\end{center}
 \end{table}
@@ -361,19 +349,17 @@ hmargin=3cm
 \chapter{Introducción}
 
 	% COMENZAR A ESCRIBIR EL TRABAJO
+	Los convertidores ADC\footnote{Analog to Digital Converter. En español, Convertidor Analógico a Digital} son onmipresentes en nuestro día a día. Sin ellos, no sería posible realizar una llamada con un teléfono móvil, o disfrutar de un sistema de climatización en nuestro hogar, o utilizar el control de crucero en nuestro coche. El objetivo de estos importantes bloques de la electrónica es convertir señales físicas, como ondas electromagnéticas, temperatura ambiente, o la posición de un eje, en señales digitales interpretables por un sistema basado en la electrónica digital. Una vez tenemos estas señales, normalmente compuestas por un flujo de bits, pueden ser procesadas por un microcontrolador para después tomar las decisiones necesarias para conseguir el objetivo deseado, como activar el compresor del aire acondicionado si la temperatura sube de cierto límite preestablecido.
+	
+	Cada día que pasa aumenta la demanda de aparatos más rápidos, compactos, y eficientes. Por regla general, la miniaturización de la electrónica tiene un impacto positivo en estos criterios. Los transistores son los componentes fundamentales de los circuitos integrados, donde recae el grueso de consumo y tamaño en un sistema electrónico. Estos transistores aumentan su eficiencia energética según disminuye su tamaño, además de permitir mayores frecuencias de operación. Por esto, existe un gran incentivo en la búsqueda de arquitecturas y técnicas de fabricación que permitan transistores más pequeños.
+	
+	La ley de Moore ayuda a poner un poco de contexto histórico a esta carrera por la disminución de los transistores. Gordon Moore anunció en 1965 una tendencia en la, por aquel entonces emergente, industria de la electrónica: cada dos años se duplicaba la cantidad de componentes presente en un circuito integrado en la misma superficie \cite{moorelaw}.
 
 
-
-
-
-
-
-
-
-
-
-
+n particular aquellos que componen la tecnología CMOS\footnote{Complimentary Metal-Oxide Semiconductor. En español, semiconductor complementario de óxido metálico}
 \chapter{Estado del arte}
+
+	La principal aplicación propuesta para el trabajo expuesto en este documento está relacionada con las telecomunicaciones. Para el avance de este sector se necesita una mayor velocidad de transferencia de datos a través del medio físico de las ondas electromagnéticas, con lo cual se buscan ADCs capaces de trabajar a mayor velocidad y en una variedad mayor de frecuencias (ancho de banda). 
 \chapter{Métodos (?)}
 \chapter{Conclusiones (?)}
 \chapter{Entorno socioeconómico (?)}
@@ -386,11 +372,10 @@ hmargin=3cm
 %\nocite{*} % Si quieres que aparezcan en la bibliografía todos los documentos que la componen (también los que no estén citados en el texto) descomenta está lína
 
 \clearpage
+
 \addcontentsline{toc}{chapter}{Bibliografía}
 \setquotestyle[english]{british} % Cambiamos el tipo de cita porque en el estilo IEEE se usan las comillas inglesas.
 \printbibliography
-
-
 
 %----------
 %	ANEXOS
