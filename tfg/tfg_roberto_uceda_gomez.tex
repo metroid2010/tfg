@@ -126,8 +126,9 @@ hmargin=3cm
 
 % DISEÑO DE FIGURAS. Puedes elegir entre el estilo para ingeniería o para ciencias sociales y humanidades. Por defecto, está activado el estilo de ingeniería. Si deseas utilizar el otro, comenta las líneas del diseño de ingeniería y descomenta las del diseño de ciencias sociales y humanidades
 \usepackage{graphicx}
-\graphicspath{{imagenes/}} %ruta a la carpeta de imágenes
+\graphicspath{{res/}} %ruta a la carpeta de imágenes
 
+\usepackage{afterpage}
 % Diseño de figuras para ingeniería
 \captionsetup[figure]{
 	format=hang,
@@ -352,13 +353,48 @@ hmargin=3cm
 	
 	Cada día que pasa aumenta la demanda de aparatos más rápidos, compactos, y eficientes. Por regla general, la miniaturización de la electrónica tiene un impacto positivo en estos criterios. Los transistores son los componentes fundamentales de los circuitos integrados, donde recae el grueso de consumo y tamaño en un sistema electrónico. Estos transistores aumentan su eficiencia energética según disminuye su tamaño, además de permitir mayores frecuencias de operación. Por esto, existe un gran incentivo en la búsqueda de arquitecturas y técnicas de fabricación que permitan transistores más pequeños.
 	
-	La ley de Moore ayuda a poner un poco de contexto histórico a esta carrera por la disminución de los transistores. Gordon Moore anunció en 1965 una tendencia en la, por aquel entonces emergente, industria de la electrónica: cada dos años se duplicaba la cantidad de componentes presente en un circuito integrado en la misma superficie \cite{moorelaw}. 
+	La ley de Moore ayuda a poner un poco de contexto histórico a esta carrera por la disminución de los transistores. Gordon Moore anunció en 1965 una tendencia en la, por aquel entonces emergente, industria de la electrónica: cada dos años se duplicaba la cantidad de componentes presente en un circuito integrado en la misma superficie \cite{moorelaw}. A más componentes, mayor poder de procesamiento, pero también mayor coste de fabricación por la complejidad y delicadeza requerida en los procesos.
 	
-	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta necesitan un amplificador operacional a modo de integrador. Los ADC basados en osciladores, o bien necesitan un integrador de manera similar a los sigma-delta, o bien necesitan una compensación de linearidad mediante un circuito digital. Los amplificadores operacionales y los circuitos de compensación requieren de mucho espacio y gran número de componentes, además de consumir más de lo deseable. Este trabajo se centra en la búsqueda de una nueva arquitectura que permita ahorrar la necesidad de circuitos de compensación o amplificadores operacionales, manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
+	Motivación del trabajo
+	
+	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta necesitan un amplificador operacional a modo de integrador. Los ADC basados en osciladores, bien necesitan un integrador de manera similar a los sigma-delta, o bien necesitan una compensación de linearidad mediante un circuito digital. Los amplificadores operacionales y los circuitos de compensación requieren de mucho espacio y gran número de componentes, además de consumir más de lo deseable. Este trabajo se centra en la búsqueda de una nueva arquitectura que permita ahorrar la necesidad de circuitos de compensación o amplificadores operacionales, manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
+	
+	\section{Objetivos}
+	
+	por decidir
+
+
+	\section{Marco regulador}
+	
+	preguntar a Eric
+	
+	
+	\section{Esquema de este documento}
+	
+	por decidir
+	
+
+	
+	
 
 \chapter{Estado del arte}
 
-	La principal aplicación propuesta para el trabajo expuesto en este documento está relacionada con las telecomunicaciones. Para el avance de este sector se necesita una mayor velocidad de transferencia de datos a través del medio físico de las ondas electromagnéticas, con lo cual se buscan ADCs capaces de trabajar a mayor velocidad y en una variedad mayor de frecuencias (ancho de banda). 
+	Para entender las arquitecturas de ADC modernas es imprescindible conocer primero los bloques fundamentales sobre los que se asienta la microelectrónica actualmente: los transistores MOSFET\footnote{Metal Oxide Semiconductor Field Effect Transistor}.
+	
+	\begin{figure}[h]
+		\includegraphics[width=\textwidth]{mos_transistor.png}
+		\caption[Corte de transistor MOSFET]{Corte de transistor MOSFET\protect\footnotemark}
+		\label{fig:mos_transistor.png}
+	\end{figure}
+
+	\footnotetext{Fuente: \url{http://ece-research.unm.edu/jimp/vlsi/slides/chap2_1.html} }
+	
+	Un transistor MOSFET es un tipo de transistor bipolar que se usa para amplificar y conmutar señales eléctricas dentro de un circuito. Se compone de cuatro entradas: fuente, puerta, drenador, y sustrato, que normalmente está conectado a la fuente. Cuando se aplica un voltaje en la puerta, se crea un canal en el medio semiconductor que permite el paso de corriente entre la fuente y el drenador. Este voltaje es positivo en caso de los transistores de canal n, y negativo en los de canal p. Usándolos como interruptores se construyen los bloques lógicos de los microprocesadores.
+	
+	\section{Tecnología CMOS}
+	
+	La tecnología de fabricación CMOS\footnote{Complementary MOS} utiliza una combinación de transistores MOSFET de canal n y canal p para implementar las funciones de un microprocesador.
+	
 \chapter{Métodos (?)}
 \chapter{Conclusiones (?)}
 \chapter{Entorno socioeconómico (?)}
@@ -368,7 +404,7 @@ hmargin=3cm
 %	BIBLIOGRAFÍA
 %----------	
 
-%\nocite{*} % Si quieres que aparezcan en la bibliografía todos los documentos que la componen (también los que no estén citados en el texto) descomenta está lína
+%\nocite{*} % Si quieres que aparezcan en la bibliogdrafía todos los documentos que la componen (también los que no estén citados en el texto) descomenta está lína
 
 \clearpage
 
