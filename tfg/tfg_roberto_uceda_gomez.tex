@@ -332,7 +332,7 @@ hmargin=3cm
 		\label{tab:table1}
 		\begin{tabular}{>{\bf}p{4cm}|p{12cm}}
 			ADC & Analog to Digital Converter, Convertidor Analógico-Digital \\
-			
+			CMOS & Complimentary Metal-Oxide Semiconductor \\
 		\end{tabular}
 	\end{center}
 \end{table}
@@ -389,11 +389,45 @@ hmargin=3cm
 
 	\footnotetext{Fuente: \url{http://ece-research.unm.edu/jimp/vlsi/slides/chap2_1.html} }
 	
-	Un transistor MOSFET es un tipo de transistor bipolar que se usa para amplificar y conmutar señales eléctricas dentro de un circuito. Se compone de cuatro entradas: fuente, puerta, drenador, y sustrato, que normalmente está conectado a la fuente. Cuando se aplica un voltaje en la puerta, se crea un canal en el medio semiconductor que permite el paso de corriente entre la fuente y el drenador. Este voltaje es positivo en caso de los transistores de canal n, y negativo en los de canal p. Usándolos como interruptores se construyen los bloques lógicos de los microprocesadores.
+	Un transistor MOSFET es un tipo de transistor bipolar que se usa para amplificar y conmutar señales eléctricas dentro de un circuito. Se compone de cuatro entradas: fuente, puerta, drenador, y sustrato, que normalmente está conectado a la fuente. Cuando se aplica un voltaje en la puerta, se crea un canal en el medio semiconductor que permite el paso de corriente entre la fuente y el drenador. Podemos distinguir dos tipos de transistores MOS: los canal-n y los canal-p, dependiendo del dopaje del silicio usado en su fabricación. Los canal-n tienen un dopaje negativo en el silicio de la fuente y el drenador, que se consigue añadiendo impurezas de un elemento como fósforo, dejando electrones libres que actúan como portadores de carga. En el caso de los canal-p, se dopan con elementos como boro, que dejan huecos (ausencia de electrones en capas de valencia), y estos actúan como portadores de carga.
+	
+	Estos son los símbolos más usados para representar transistores MOS:
+	
+	\begin{figure}[h]
+		\includegraphics[width=\textwidth]{p-mos-symbol.png}
+		\caption[Transistor MOS, canal-p]{Transistor MOS, canal-p\protect\footnotemark}
+		\label{fig:p-mos-symbol.png}
+	\end{figure}
+
+	\footnotetext{Fuente: Analog Integrated Circuit Design\cite{aicd}}
+	
+	\begin{figure}[h]
+		\includegraphics[width=\textwidth]{n-mos-symbol.png}
+		\caption[Transistor MOS, canal-n]{Transistor MOS, canal-n\protect\footnotemark}
+		\label{fig:n-mos-symbol.png}
+	\end{figure}
+	
+	
+	\footnotetext{Fuente: Analog Integrated Circuit Design\cite{aicd}}
 	
 	\section{Tecnología CMOS}
 	
-	La tecnología de fabricación CMOS\footnote{Complementary MOS} utiliza una combinación de transistores MOSFET de canal n y canal p para implementar las funciones de un microprocesador.
+	La tecnología de fabricación CMOS\footnote{Complementary MOS} utiliza una combinación de transistores MOS de canal n y canal p para implementar las funciones de un microprocesador. Por ejemplo, un inversor (puerta lógica NOT) se consigue con la siguiente disposición:
+	
+	\begin{figure}[h]
+		\includegraphics[width=\textwidth]{inverter_mos.jpg}
+		\caption[Inversor CMOS]{Inversor CMOS\protect\footnotemark}
+		\label{fig:inverter_mos.jpg}
+	\end{figure}
+	\footnotetext{Fuente: \url{https://www.oreilly.com/library/view/introduction-to-digital/9780470900550/chap5-sec008.html} }
+	
+	Los circuitos CMOS tienen un bajo consumo, tienen una buena resistencia al ruido, y son relativamente fáciles de diseñar. Es por esto que se ha convertido en la tecnología dominante en los microcircuitos.
+	
+	\section{Conversión analógico-digital}
+	
+	
+	
+	
 	
 \chapter{Métodos (?)}
 \chapter{Conclusiones (?)}
