@@ -207,7 +207,9 @@ hmargin=3cm
 
 % my settings
 \linespread{1.5}
-
+\usepackage{float}
+\usepackage[bottom]{footmisc}
+\usepackage{enumitem}
 
 %-------------
 %	DOCUMENTO
@@ -333,6 +335,7 @@ hmargin=3cm
 		\begin{tabular}{>{\bf}p{4cm}|p{12cm}}
 			ADC & Analog to Digital Converter, Convertidor Analógico-Digital \\
 			CMOS & Complimentary Metal-Oxide Semiconductor \\
+			MOSFET & Metal Oxide Semiconductor Field Effect Transistor, también llamados transistores MOS \\
 		\end{tabular}
 	\end{center}
 \end{table}
@@ -355,7 +358,7 @@ hmargin=3cm
 	
 	La ley de Moore ayuda a poner un poco de contexto histórico a esta carrera por la disminución de los transistores. Gordon Moore anunció en 1965 una tendencia en la, por aquel entonces emergente, industria de la electrónica: cada dos años se duplicaba la cantidad de componentes presente en un circuito integrado en la misma superficie \cite{moorelaw}. A más componentes, mayor poder de procesamiento, pero también mayor coste de fabricación por la complejidad y delicadeza requerida en los procesos.
 	
-	Motivación del trabajo
+	\section{Motivación del trabajo}
 	
 	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta necesitan un amplificador operacional a modo de integrador. Los ADC basados en osciladores, bien necesitan un integrador de manera similar a los sigma-delta, o bien necesitan una compensación de linearidad mediante un circuito digital. Los amplificadores operacionales y los circuitos de compensación requieren de mucho espacio y gran número de componentes, además de consumir más de lo deseable. Este trabajo se centra en la búsqueda de una nueva arquitectura que permita ahorrar la necesidad de circuitos de compensación o amplificadores operacionales, manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
 	
@@ -381,6 +384,8 @@ hmargin=3cm
 
 	Para entender las arquitecturas de ADC modernas es imprescindible conocer primero los bloques fundamentales sobre los que se asienta la microelectrónica actualmente: los transistores MOSFET\footnote{Metal Oxide Semiconductor Field Effect Transistor}.
 	
+	\section{Transistores MOS}
+	
 	\begin{figure}[h]
 		\includegraphics[width=\textwidth]{mos_transistor.png}
 		\caption[Corte de transistor MOSFET]{Corte de transistor MOSFET\protect\footnotemark}
@@ -394,7 +399,7 @@ hmargin=3cm
 	Estos son los símbolos más usados para representar transistores MOS:
 	
 	\begin{figure}[h]
-		\includegraphics[width=\textwidth]{p-mos-symbol.png}
+		\includegraphics[width=0.8\textwidth]{p-mos-symbol.png}
 		\caption[Transistor MOS, canal-p]{Transistor MOS, canal-p\protect\footnotemark}
 		\label{fig:p-mos-symbol.png}
 	\end{figure}
@@ -402,7 +407,7 @@ hmargin=3cm
 	\footnotetext{Fuente: Analog Integrated Circuit Design\cite{aicd}}
 	
 	\begin{figure}[h]
-		\includegraphics[width=\textwidth]{n-mos-symbol.png}
+		\includegraphics[width=0.8\textwidth]{n-mos-symbol.png}
 		\caption[Transistor MOS, canal-n]{Transistor MOS, canal-n\protect\footnotemark}
 		\label{fig:n-mos-symbol.png}
 	\end{figure}
@@ -414,19 +419,48 @@ hmargin=3cm
 	
 	La tecnología de fabricación CMOS\footnote{Complementary MOS} utiliza una combinación de transistores MOS de canal n y canal p para implementar las funciones de un microprocesador. Por ejemplo, un inversor (puerta lógica NOT) se consigue con la siguiente disposición:
 	
-	\begin{figure}[h]
-		\includegraphics[width=\textwidth]{inverter_mos.jpg}
+	\begin{figure}[H]
+		\includegraphics[width=0.75\textwidth]{inverter_mos.jpg}
 		\caption[Inversor CMOS]{Inversor CMOS\protect\footnotemark}
 		\label{fig:inverter_mos.jpg}
 	\end{figure}
 	\footnotetext{Fuente: \url{https://www.oreilly.com/library/view/introduction-to-digital/9780470900550/chap5-sec008.html} }
 	
+	
 	Los circuitos CMOS tienen un bajo consumo, tienen una buena resistencia al ruido, y son relativamente fáciles de diseñar. Es por esto que se ha convertido en la tecnología dominante en los microcircuitos.
 	
 	\section{Conversión analógico-digital}
 	
+	La tarea de un convertidor analógico-digital, o ADC, es convertir una señal de espectro continuo en el tiempo en una señal de valores discretos cuantizable.
 	
+	\begin{figure}[h]
+		\includegraphics[width=0.75\textwidth]{analog-vs-digital-signal.jpg}
+		\caption[Señal analógica a digital]{Señal analógica a digital\protect\footnotemark}
+		\label{fig:analog-vs-digital-signal.jpg}
+	\end{figure}
+	\footnotetext{Fuente: \url{https://electronics.stackexchange.com/questions/352784/in-digital-systems-do-we-discretize-both-time-and-magnitude-or-only-time} }
 	
+	En un ADC, la señal analógica original sufre dos transformaciones: un muestreo y una cuantificación. El muestro toma valores de la señal a una frecuencia concreta, descartando los intermedios. La cuantificación transforma el espectro continuo de la señal en un conjunto de valores finito. Esto es suficiente para lograr un conjunto de palabras (conjunto de bits de longitud definida) a una frecuencia de trabajo, para ser almacenadas o procesadas por un microcontrolador.
+	
+	Estos son algunos de los parámetros básicos que describen el comportamiento y prestaciones de un ADC:
+	
+	\begin{description}[font=\bfseries, style=multiline, align=left, before={\renewcommand\makelabel[1]{\bfseries ##1:}}]
+		\item[Frecuencia de muestreo] Frecuencia a la cual se toman medidas de la señal original. Determina el ancho de banda.
+		\item[Ancho de banda] Rango de frecuencias de la señal original que puede ser correctamente muestreada, cuantizada, y posteriormente recreada.
+		\item[Resolución] Número de pasos máximo entre rango de valores de la señal analógica. Determina el error de cuantificación y el SNR máximo.
+		\item[SNR] Signal to Noise Ratio. Relaciona la potencia de la señal de interés y el ruido de fondo existente.
+	\end{description}
+
+	En cuanto a errores en la conversión, estas son las principales fuentes:
+	
+	\begin{description}[font=\bfseries, style=multiline, align=left, before={\renewcommand\makelabel[1]{\bfseries ##1:}}]
+		\item[Cuantificación] Para una muestra dada en un momento determinado, diferencia entre el valor de la señal original y valor de la señal cuantificada. Surge porque para cada valor discreto de la señal cuantificada, existen infinitos niveles en cierto rango de la señal original.
+		\item[Linealidad] Falta de correlación lineal entre entrada y salida del ADC. Necesita ser corregida para evitar divergencias entre entrada y salida que distorsionan la lectura.
+		\item[Offset] Para valores muy bajos de señal original, la lectura puede ser distorsionada si no se corrige el offset.
+		\item[Ganancia] Si no se ajusta correctamente, se puede inducir en un error creciente a medida que se recorre la curva de respuesta.
+	\end{description}
+
+
 	
 	
 \chapter{Métodos (?)}
@@ -438,7 +472,7 @@ hmargin=3cm
 %	BIBLIOGRAFÍA
 %----------	
 
-%\nocite{*} % Si quieres que aparezcan en la bibliogdrafía todos los documentos que la componen (también los que no estén citados en el texto) descomenta está lína
+\nocite{*} % Si quieres que aparezcan en la bibliografía todos los documentos que la componen (también los que no estén citados en el texto) descomenta está lína
 
 \clearpage
 
