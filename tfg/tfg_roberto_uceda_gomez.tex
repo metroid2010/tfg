@@ -210,6 +210,7 @@ hmargin=3cm
 \usepackage{float}
 \usepackage[bottom]{footmisc}
 \usepackage{enumitem}
+\newcommand{\sigmadelta}{\begin{math}\Sigma\Delta\; \end{math}}
 
 %-------------
 %	DOCUMENTO
@@ -275,6 +276,7 @@ hmargin=3cm
 	\textbf{Palabras clave: ADC-VCO, Oscilador en anillo, Conversión Analógico-Digital, CMOS}
 	% Escribir las palabras clave aquí
 	
+	TODO
 	\vfill
 \end{abstract}
 	\newpage % página en blanco o de cortesía
@@ -289,7 +291,7 @@ hmargin=3cm
 
 \setcounter{page}{5}
 	
-	% ESCRIBIR LA DEDICATORIA AQUÍ	
+	TODO
 		
 	\vfill
 	
@@ -360,20 +362,20 @@ hmargin=3cm
 	
 	\section{Motivación del trabajo}
 	
-	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta necesitan un amplificador operacional a modo de integrador. Los ADC basados en osciladores, bien necesitan un integrador de manera similar a los sigma-delta, o bien necesitan una compensación de linearidad mediante un circuito digital. Los amplificadores operacionales y los circuitos de compensación requieren de mucho espacio y gran número de componentes, además de consumir más de lo deseable. Este trabajo se centra en la búsqueda de una nueva arquitectura que permita ahorrar la necesidad de circuitos de compensación o amplificadores operacionales, manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
+	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta necesitan un amplificador operacional a modo de integrador. Los ADC basados en VCO actuales, o bien necesitan un integrador de manera similar a los sigma-delta, o bien necesitan una compensación de linearidad mediante circuitería digital. Los amplificadores operacionales y los circuitos de compensación requieren de mucho espacio y gran número de componentes, además de consumir más de lo deseable. Este trabajo se centra en la búsqueda de una nueva arquitectura usando un VCO tanto como integrador como cuantificador, que permita ahorrar la necesidad de circuitos de compensación o amplificadores operacionales, manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
 	
 	\section{Objetivos}
 	
-	por decidir
-
+	El grueso de este trabajo se encuentra en el plano teórico. El primer paso es realizar un estudio de las arquitecturas de ADC ya existentes, centrándose en aquellas que emplean VCOs. A partir de este estudio, se estudiará la viabilidad de varias ideas de diferentes publicaciones que aún no han sido implementadas. Para esto, se utilizarán herramientas de simulación basadas en SPICE. Una vez probada la efectividad de la arquitectura, la siguiente tarea será montar un circuito con componentes discretos sobre protoboard, medir los parámetros de funcionamiento, y así dejar demostrada la factibilidad de la arquitectura.
+	TODO: consultar Eric
 
 	\section{Marco regulador}
-	
+	TODO	
 	preguntar a Eric
 	
 	
 	\section{Esquema de este documento}
-	
+	TODO
 	por decidir
 	
 
@@ -386,7 +388,7 @@ hmargin=3cm
 	
 	\section{Transistores MOS}
 	
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\includegraphics[width=\textwidth]{mos_transistor.png}
 		\caption[Corte de transistor MOSFET]{Corte de transistor MOSFET\protect\footnotemark}
 		\label{fig:mos_transistor.png}
@@ -398,7 +400,7 @@ hmargin=3cm
 	
 	Estos son los símbolos más usados para representar transistores MOS:
 	
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\includegraphics[width=0.8\textwidth]{p-mos-symbol.png}
 		\caption[Transistor MOS, canal-p]{Transistor MOS, canal-p\protect\footnotemark}
 		\label{fig:p-mos-symbol.png}
@@ -406,7 +408,7 @@ hmargin=3cm
 
 	\footnotetext{Fuente: Analog Integrated Circuit Design\cite{aicd}}
 	
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\includegraphics[width=0.8\textwidth]{n-mos-symbol.png}
 		\caption[Transistor MOS, canal-n]{Transistor MOS, canal-n\protect\footnotemark}
 		\label{fig:n-mos-symbol.png}
@@ -433,7 +435,7 @@ hmargin=3cm
 	
 	La tarea de un convertidor analógico-digital, o ADC, es convertir una señal de espectro continuo en el tiempo en una señal de valores discretos cuantizable.
 	
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\includegraphics[width=0.75\textwidth]{analog-vs-digital-signal.jpg}
 		\caption[Señal analógica a digital]{Señal analógica a digital\protect\footnotemark}
 		\label{fig:analog-vs-digital-signal.jpg}
@@ -454,16 +456,84 @@ hmargin=3cm
 	En cuanto a errores en la conversión, estas son las principales fuentes:
 	
 	\begin{description}[font=\bfseries, style=multiline, align=left, before={\renewcommand\makelabel[1]{\bfseries ##1:}}]
-		\item[Cuantificación] Para una muestra dada en un momento determinado, diferencia entre el valor de la señal original y valor de la señal cuantificada. Surge porque para cada valor discreto de la señal cuantificada, existen infinitos niveles en cierto rango de la señal original.
+		\item[Cuantificación] Para una muestra dada en un momento determinado, diferencia entre el valor de la señal original y valor de la señal cuantificada. Surge porque para cada valor discreto de la señal cuantificada, existe un rango con infinitos valores intermedios en la señal original.
 		\item[Linealidad] Falta de correlación lineal entre entrada y salida del ADC. Necesita ser corregida para evitar divergencias entre entrada y salida que distorsionan la lectura.
 		\item[Offset] Para valores muy bajos de señal original, la lectura puede ser distorsionada si no se corrige el offset.
 		\item[Ganancia] Si no se ajusta correctamente, se puede inducir en un error creciente a medida que se recorre la curva de respuesta.
 	\end{description}
 
+	Es importante diferenciar dos tipos de ADC según su frecuencia de muestreo:
+	\begin{description}[font=\bfseries, style=multiline, align=left, before={\renewcommand\makelabel[1]{\bfseries ##1:}}]
+		\item[A frecuencia de Nyquist] La frecuencia de muestreo es igual a dos veces la frecuencia máxima de la señal a capturar\cite{nyquist}\cite{shannon-nyquist}.
+		\item[Sobremuestreados] La frecuencia de muestreo es superior a la frecuencia de Nyquist; habitualmente unas diez veces mayor.
+	\end{description}
+	
+	La mayoría de arquitecturas de ADC actuales trabajan con sobremuestreo, ya que permiten una mejor gestión del ruido.
+	
+	\section{Arquitecturas de ADC actuales}
+	
+	Existen multitud de arquitecturas ADC: flash, aproximaciones sucesivas, de integración, de rampa, de seguimiento, tensión-frecuencia, y un largo etcétera.
+	
+	\begin{figure}[H]
+		\includegraphics[width=0.5\textwidth]{flash-adc.png}
+		\caption[ADC de conversión directa tipo flash]{ADC de conversión directa tipo flash\protect\footnotemark}
+		\label{fig:flash-adc.png}
+	\end{figure}
+	\footnotetext{Fuente: \url{https://www.allaboutcircuits.com/textbook/digital/chpt-13/flash-adc/} }
+	\begin{figure}[H]
+		\includegraphics[width=0.6\textwidth]{integrator-adc-double-ramp.png}
+		\caption[ADC integrador de doble rampa]{ADC integrador de doble rampa\protect\footnotemark}
+		\label{fig:integrator-adc-double-ramp.png}
+	\end{figure}
+	\footnotetext{Fuente: \url{http://www.electronics-tutorial.net/analog-integrated-circuits/data-converters/dual-slope-type-adc/} }
+	
+	Los más cercanos a la materia de este estudio son los de integración, en concreto los que utilizan la modulación sigma-delta.
+	
+	\section{Modulación sigma-delta en ADCs}
+	
+	Un ADC que utiliza el principio de modulación sigma-delta, también llamado \textit{modulador sigma-delta}, o \textit{modulador \sigmadelta}, tiene como bloques principales un sumador, un integrador, y un cuantificador, además de un bucle de retroalimentación. Este es el esquema de bloques básico de un modulador \sigmadelta:
+	
+	\begin{figure}[H]
+		\includegraphics[width=0.6\textwidth]{sigma-delta-blocks.png}
+		\caption[Bloques de un modulador \sigmadelta]{Bloques de un modulador \sigmadelta\protect\footnotemark}
+		\label{fig:sigma-delta-blocks.png}
+	\end{figure}
+	\footnotetext{Fuente: Oversampled Analog-To-Digital Converter Architectures Based On Pulse Frequency Modulation\cite{eric-thesis} }
+	
+	El funcionamiento de este tipo de ADC sigue los pasos siguientes. La señal original \begin{math}( x(t) )\end{math} es sumada a la salida del cuantificador \begin{math}( y(t) )\end{math} en magnitud negativa. La salida \begin{math}( y(t) )\end{math} es un flujo de un bit de profundidad, por lo que debe ser transformada a magnitud real a través de un DAC. El integrador forma un filtro de paso bajo sobre la diferencia entre señal original y cuantificada de tal manera que se consigue una realimentación de baja frecuencia, consiguiendo una reducción del ruido de cuantificación en la banda de respuesta.
+	
+	Este es un ejemplo gráfico del resultado de la modulación \sigmadelta:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{sd-modulation-example.jpg}
+		\caption[Modulación \sigmadelta  de una señal de 1.5kHz]{Modulación \sigmadelta de una señal de 1.5kHz\protect\footnotemark}
+		\label{fig:sd-modulation-example.jpg}
+	\end{figure}
+
+	\footnotetext{Fuente: \url{http://www.cs.tut.fi/sgn/arg/rosti/1-bit/} }
+	
+	Se puede observar que el promedio de la señal modulada de 1 bit es proporcional a la señal original.
+	
+	Con respecto a un ADC de aproximaciones sucesivas o de seguimiento, la modulación \sigmadelta una gran linealidad en la curva de respuesta y una disminución del ruido de fondo, ya que el bucle tenderá a hacer que la salida \begin{math} y(t) \end{math} sea cero. El cuantificador suele ser un comparador implementado con un amplificador operacional de alta ganancia, con una referencia ajustada a la aplicación. Además suele existir un circuito sample-and-hold con una frecuencia de reloj que se ajusta a la entrada al circuito que recibirá la señal ya convertida a digital.
+	
+	Las principales desventajas de la conversión por modulador \sigmadelta son la necesidad de una frecuencia de muestreo muy alta respecto a la original, lo cual es un problema a la hora de convertir señales de muy alta frecuencia;
+	TODO: añadir más desventajas
+	
+	TODO: explicar VCO (o mejor en desarrollo?)
 
 	
+\chapter{Análisis}
 	
-\chapter{Métodos (?)}
+	TODO: nombre para este capítulo
+	
+	En este capítulo se expone el análisis de una nueva arquitectura de ADC que emplea un VCO como cuantificador e integrador.
+	
+	\section{Idea inicial}
+	
+	La idea fundamental de la nueva arquitectura es sustituir el integrador y el cuantificador de un ADC de tipo \sigmadelta por un VCO. Esto eliminaría la necesidad de un amplificador operacional presente en un \sigmadelta, rebajando por tanto el número de componentes necesarios y el consumo total del sistema.
+
+	
+
 \chapter{Conclusiones (?)}
 \chapter{Entorno socioeconómico (?)}
 \chapter{Presupuesto / planificación / proceso (?)}
