@@ -42,6 +42,7 @@ hmargin=3cm
 
 \usepackage[spanish, es-tabla]{babel} 
 \usepackage[babel, spanish=spanish]{csquotes}
+\usepackage{etoolbox}
 \AtBeginEnvironment{quote}{\small}
 
 % diseño de PIE DE PÁGINA
@@ -182,7 +183,7 @@ hmargin=3cm
 
 %BIBLIOGRAFÍA - PUEDES ELEGIR ENTRE ESTILO IEEE O APA. POR DEFECTO ESTÁ CONFIGURADO IEEE. SI DESEAS USAR APA, COMENTA LAS LÍNEA DE IEEE Y DESCOMENTA LAS DE APA. Si haces cambios en la configuración de la bibliografía y no obtienes los resultados esperados, es recomendable limpiar los archivos auxiliares y volver a compilar en este orden: COMPILAR-BIBLIOGRAFIA-COMPILAR
 
-% Tienes más información sobre cómo generar bibliografía y CONFIGURAR TU EDITOR DE TEXTO para compilar con biber en http://tex.stackexchange.com/questions/154751/biblatex-with-biber-configuring-my-editor-to-avoid-undefined-citations , https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX y en http://www.ctan.org/tex-archive/macros/latex/exptl/biblatex-contrib
+% Tienes más información sobre cómo generar bibliografía y CONFIGURAR TU EDITOR DE TEXTO para compilar con biber en http://tex.stackexchange.com/questions/154751/xx-with-biber-configuring-my-editor-to-avoid-undefined-citations , https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX y en http://www.ctan.org/tex-archive/macros/latex/exptl/biblatex-contrib
 % También te recomendamos consultar la guía temática de la Biblioteca sobre citas bibliográficas: http://uc3m.libguides.com/guias_tematicas/citas_bibliograficas/inicio
 
 % CONFIGURACIÓN PARA LA BIBLIOGRAFÍA IEEE
@@ -190,18 +191,19 @@ hmargin=3cm
 
 % Añadimos las siguientes indicaciones para mejorar la adaptación de los estilos en español
 \DefineBibliographyStrings{spanish}{%
-	andothers = {et\addabbrvspace al\adddot}
+	andothers = {et\addabbrvspace al\adddotspace}
 }
 \DefineBibliographyStrings{spanish}{
-	url = {\adddot\space[En línea]\adddot\space Disponible en:}
+	url = {\adddotspace[En línea]\adddotspace Disponible en:}
 }
 \DefineBibliographyStrings{spanish}{
 	urlseen = {Acceso:}
 }
 \DefineBibliographyStrings{spanish}{
-	pages = {pp\adddot},
-	page = {p.\adddot}
+	pages = {pp\adddotspace},
+	page = {p.\adddotspace}
 }
+
 
 \addbibresource{bib/bibliography.bib} % llama al archivo bibliografia.bib en el que debería estar la bibliografía utilizada
 
@@ -211,6 +213,7 @@ hmargin=3cm
 \usepackage[bottom]{footmisc}
 \usepackage{enumitem}
 \newcommand{\sigmadelta}{\begin{math}\Sigma\Delta\; \end{math}}
+\usepackage{microtype}
 
 %-------------
 %	DOCUMENTO
@@ -223,6 +226,7 @@ hmargin=3cm
 %	PORTADA
 %----------	
 \begin{titlepage}
+
 	\begin{sffamily}
 	\color{azulUC3M}
 	\begin{center}
@@ -245,8 +249,8 @@ hmargin=3cm
 			{\LARGE Roberto Uceda Gómez}\\ 
 			\vspace*{1cm}
 		\begin{Large}
-			Tutor\\
-			Eric Gutiérrez
+			Tutor:
+			Eric Gutiérrez Fernández
 			Leganés, {fecha}
 		\end{Large}
 	\end{center}
@@ -254,7 +258,7 @@ hmargin=3cm
 	\color{black}
 	% si nuestro trabajo se va a publicar con una licencia Creative Commons, incluir estas líneas. Es la opción recomendada.
 	\includegraphics[width=4.2cm]{res/creativecommons.png}\\ %incluimos el logotipo de creativecommons
-	Esta obra se encuentra sujeta a la licencia Creative Commons \textbf{Reconocimiento - No Comercial - Sin Obra Derivada}
+	Esta obra se encuentra sujeta a la licencia Creative Commons\\ \textbf{Reconocimiento - No Comercial - Sin Obra Derivada}
 	\end{sffamily}
 \end{titlepage}
 
@@ -334,7 +338,7 @@ hmargin=3cm
 	\begin{center}
 		\caption{Lista de abreviaturas}
 		\label{tab:table1}
-		\begin{tabular}{>{\bf}p{4cm}|p{12cm}}
+		\begin{tabular}{>{\bf}p{4cm}|p{10cm}}
 			ADC & Analog to Digital Converter, Convertidor Analógico-Digital \\
 			CMOS & Complimentary Metal-Oxide Semiconductor \\
 			MOSFET & Metal Oxide Semiconductor Field Effect Transistor, también llamados transistores MOS \\
@@ -531,6 +535,47 @@ hmargin=3cm
 	\section{Idea inicial}
 	
 	La idea fundamental de la nueva arquitectura es sustituir el integrador y el cuantificador de un ADC de tipo \sigmadelta por un VCO. Esto eliminaría la necesidad de un amplificador operacional presente en un \sigmadelta, rebajando por tanto el número de componentes necesarios y el consumo total del sistema.
+	TODO: preguntar a Eric la fuente original de la idea
+	
+	El primer paso para desarrollar el estudio es comprender cómo funciona un VCO.
+	
+	\section{VCO: Oscilador Controlado por Voltaje}
+	
+	Un VCO, siglas de \textit{Voltage Controlled Oscillator} es un componente formado por transistores MOSFET que emite un flujo de pulsos cuya frecuencia es proporcional al voltaje de alimentación.
+	
+	En su forma más básica, consiste en un número impar de puertas inversoras colocadas en un bucle. En las entradas de alimentación de las puertas se conecta la señal a modular. La señal ya modulada aparece entre la salida y la entrada de cualquier par de puertas.
+	
+	Esta es la representación simbólica de una puerta inversora, con sus conexiones nombradas:
+	\begin{figure}[H]
+		\includegraphics[width=0.3\textwidth]{inverter-symbol.png}
+		\caption[Símbolo y tabla de verdad de una puerta inversora]{Símbolo y tabla de verdad de una puerta inversora}
+		\label{fig:inverter-symbol.png}
+	\end{figure}
+	
+	Así se consigue un inversor en tecnología CMOS. El transistor superior es de canal-p, y el inferior es de canal-n.
+	\begin{figure}[H]
+		\includegraphics[width=0.4\textwidth]{inverter-sch.png}
+		\caption[Esquemático de una puerta inversora con transistores MOS]{Esquemático de una puerta inversora con transistores MOS}
+		\label{fig:inverter-sch.png}
+	\end{figure}
+	
+	Cuando la señal de entrada está en cero lógico (0 voltios) el transistor canal-n se encuentra con una diferencia de voltaje baja entre la puerta y la fuente, así que no hay paso de corriente entre la fuente y el drenador. Por su parte, en el transistor canal-p la diferencia de voltaje entre la puerta y la fuente es grande (la fuente está conectada a una fuente de alimentación VCC que proporciona un voltaje llamado bias), así que la corriente entre su fuente y drenador es no nula. Así, en la salida el voltaje es equivalente al voltaje de bias VCC.
+	
+	Cuando la señal de entrada está en uno lógico (cercano al voltaje de bias), ocurre lo contrario: el transistor n entra en su región activa (permite el paso de corriente) mientras que el p entra en zona de corte (no permite el paso de corriente). Así, la salida estará conectada a tierra, normalmente cero voltios.
+
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{vco-symbol.png}
+		\caption[VCO compuesto por 5 puertas inversoras]{VCO compuesto por 5 puertas inversoras}
+		\label{fig:vco-symbol.png}
+	\end{figure}
+
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{vco-sch.png}
+		\caption[Esquemático de un VCO]{Esquemático de un VCO}
+		\label{fig:vco-sch.png}
+	\end{figure}
+
+	El número impar de puertas inversoras provoca un estado de inestabilidad en
 
 	
 
@@ -547,6 +592,7 @@ hmargin=3cm
 \clearpage
 
 \addcontentsline{toc}{chapter}{Bibliografía}
+
 \setquotestyle[english]{british} % Cambiamos el tipo de cita porque en el estilo IEEE se usan las comillas inglesas.
 \printbibliography
 
