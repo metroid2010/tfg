@@ -212,7 +212,7 @@ hmargin=3cm
 \usepackage{float}
 \usepackage[bottom]{footmisc}
 \usepackage{enumitem}
-\newcommand{\sigmadelta}{\begin{math}\Sigma\Delta\; \end{math}}
+\newcommand{\sigmadelta}{$\Sigma\Delta\; $}
 \usepackage{microtype}
 
 %-------------
@@ -510,7 +510,7 @@ hmargin=3cm
 	
 	\begin{figure}[H]
 		\includegraphics[width=\textwidth]{sd-modulation-example.jpg}
-		\caption[Modulación \sigmadelta  de una señal de 1.5kHz]{Modulación \sigmadelta de una señal de 1.5kHz\protect\footnotemark}
+		\caption[Modulación \sigmadelta de una señal de 1.5kHz]{Modulación \sigmadelta de una señal de 1.5kHz\protect\footnotemark}
 		\label{fig:sd-modulation-example.jpg}
 	\end{figure}
 
@@ -539,11 +539,11 @@ hmargin=3cm
 	
 	El primer paso para desarrollar el estudio es comprender cómo funciona un VCO.
 	
-	\section{VCO: Oscilador Controlado por Voltaje}
+	\section{VCO en anillo}
 	
-	Un VCO, siglas de \textit{Voltage Controlled Oscillator} es un componente formado por transistores MOSFET que emite un flujo de pulsos cuya frecuencia es proporcional al voltaje de alimentación.
+	Un VCO, siglas de \textit{Voltage Controlled Oscillator} es un componente electrónico que emite un flujo de pulsos cuya frecuencia es proporcional al voltaje de alimentación.
 	
-	En su forma más básica, consiste en un número impar de puertas inversoras colocadas en un bucle. En las entradas de alimentación de las puertas se conecta la señal a modular. La señal ya modulada aparece entre la salida y la entrada de cualquier par de puertas.
+	Un VCO en anillo es un tipo de oscilador controlado por voltaje. En su forma más básica, consiste en un número impar de puertas inversoras colocadas en un bucle. En las entradas de alimentación de las puertas se conecta la señal a modular. La señal ya modulada aparece entre la salida y la entrada de cualquier par de puertas.
 	
 	Esta es la representación simbólica de una puerta inversora, con sus conexiones nombradas:
 	\begin{figure}[H]
@@ -575,7 +575,32 @@ hmargin=3cm
 		\label{fig:vco-sch.png}
 	\end{figure}
 
-	El número impar de puertas inversoras provoca un estado de inestabilidad en
+	El número impar de puertas inversoras provoca un estado de inestabilidad en el oscilador. Dado que hay una pequeña demora en la activación de las puertas por (TODO: por qué hay demora en activación?), y por la realimentación positiva en el anillo, se crean señales alternativas entre un 1 lógico y un 0 lógico. La frecuencia a la que estas señales cambian es proporcional al voltaje aplicado en la alimentación de las puertas (VCC en la figuras \ref{fig:inverter-symbol.png} y \ref{fig:inverter-sch.png}). La frecuencia de oscilación sigue la siguiente fórmula:
+	
+	\begin{figure}[h]
+		\begin{equation}
+		\label{vco-freq-sw-t}
+		f = \frac{1}{2 n \tau}
+		\end{equation}
+		\footnotemark
+	\end{figure}
+	\footnotetext{Fuente: \cite{eric-thesis}}
+	
+	Adimensionalizando el valor del voltaje de entrada, y asumiendo un comportamiento ideal del VCO, podemos expresar la relación entre entrada y salida como:
+	\begin{figure}[h]
+		\begin{equation}
+		\label{vco-freq-ideal}
+		f_{VCO}= f_{0} + K_{VCO} * V_{i}
+		\end{equation}
+		\footnotemark
+	\end{figure}
+	\footnotetext{Fuente: \cite{eric-thesis}}
+	
+	Donde $f_{VCO}$ es la frecuencia del oscilador, $f_{0}$ es la frecuencia en reposo (con una señal de entrada equivalente a 0), $K_{VCO}$ es la ganancia intrínseca en $Hz/V$, y $V_{i}$ es el valor de entrada adimensional, con valores comprendidos entre -1 y 1.
+	
+	
+	
+	
 
 	
 
