@@ -366,7 +366,9 @@ hmargin=3cm
 	
 	\section{Motivación del trabajo}
 	
-	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta necesitan un amplificador operacional a modo de integrador. Los ADC basados en VCO actuales, o bien necesitan un integrador de manera similar a los sigma-delta, o bien necesitan una compensación de linearidad mediante circuitería digital. Los amplificadores operacionales y los circuitos de compensación requieren de mucho espacio y gran número de componentes, además de consumir más de lo deseable. Este trabajo se centra en la búsqueda de una nueva arquitectura usando un VCO tanto como integrador como cuantificador, que permita ahorrar la necesidad de circuitos de compensación o amplificadores operacionales, manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
+	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes, reducción del tamaño de los transistores), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta, los más comunes en aplicaciones de alta velocidad, requieren de un integrador, normalmente implementado como un amplificador operacional. Estos integradores trabajan en el ámbito analógico. Con las tecnologías de fabricación actuales, se consiguen transistores de tamaños diminutos, con buen tiempo de respuesta y bajo consumo en aplicaciones digitales, pero efectos adversos en aplicaciones analógicas. Algunos de estos efectos son la degradación de la señal por efectos cuánticos y defectos en la fabricación (el tamaño nominal de un transistor CMOS de tecnología puntera es entre un cuarto y una décima parte la longitud de onda de la luz ultravioleta usada en litografía), altas corrientes parásitas por el bajo tamaño de la puerta del transistor, y limitaciones en la simulación de sistemas por la alta densidad y complejidad en los microchips actuales.
+	
+	Los ADC basados en VCO actuales, o bien necesitan un integrador analógico de manera similar a los sigma-delta, o bien necesitan una compensación de linealidad mediante circuitería digital, que termina ocupando la mayor parte de la superficie del chip. Este trabajo se centra en la búsqueda de una nueva arquitectura usando un VCO tanto como integrador como cuantificador, que permita ahorrar la necesidad de circuitos de compensación y circuitos analógicos complejos, manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
 	
 	\section{Objetivos}
 	
@@ -520,6 +522,18 @@ hmargin=3cm
 	
 	Con respecto a un ADC de aproximaciones sucesivas o de seguimiento, la modulación \sigmadelta una gran linealidad en la curva de respuesta y una disminución del ruido de fondo, ya que el bucle tenderá a hacer que la salida \begin{math} y(t) \end{math} sea cero. El cuantificador suele ser un comparador implementado con un amplificador operacional de alta ganancia, con una referencia ajustada a la aplicación. Además suele existir un circuito sample-and-hold con una frecuencia de reloj que se ajusta a la entrada al circuito que recibirá la señal ya convertida a digital.
 	
+	En cuanto al integrador, las implementaciones más comunes son con un amplificador operacional o por transconductancia.
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{integrator-opamp-trans.png}
+		\caption[Integradores por opamp (a) y por transconductancia (b)]{Integradores por opamp (a) y por transconductancia (b)\protect\footnotemark}
+		\label{fig:integrator-opamp-trans.png}
+	\end{figure}
+	
+	\footnotetext{Fuente: \cite{eric-thesis} }
+	
+	Como se puede observar, ambas opciones trabajan en ámbito analógico.
+	
 	Las principales desventajas de la conversión por modulador \sigmadelta son la necesidad de una frecuencia de muestreo muy alta respecto a la original, lo cual es un problema a la hora de convertir señales de muy alta frecuencia;
 	TODO: añadir más desventajas
 	
@@ -597,6 +611,8 @@ hmargin=3cm
 	\footnotetext{Fuente: \cite{eric-thesis}}
 	
 	Donde $f_{VCO}$ es la frecuencia del oscilador, $f_{0}$ es la frecuencia en reposo (con una señal de entrada equivalente a 0), $K_{VCO}$ es la ganancia intrínseca en $Hz/V$, y $V_{i}$ es el valor de entrada adimensional, con valores comprendidos entre -1 y 1.
+	
+	
 	
 	
 	
