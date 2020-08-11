@@ -555,9 +555,9 @@ hmargin=3cm
 	
 	\section{VCO en anillo}
 	
-	Un VCO, siglas de \textit{Voltage Controlled Oscillator} es un componente electrónico que emite un flujo de pulsos cuya frecuencia es proporcional al voltaje de alimentación.
+	Un VCO, siglas de \textit{Voltage Controlled Oscillator} es un componente electrónico que emite un flujo de pulsos cuya frecuencia es proporcional a un voltaje de entrada.
 	
-	Un VCO en anillo es un tipo de oscilador controlado por voltaje. En su forma más básica, consiste en un número impar de puertas inversoras colocadas en un bucle. En las entradas de alimentación de las puertas se conecta la señal a modular. La señal ya modulada aparece entre la salida y la entrada de cualquier par de puertas.
+	Un VCO en anillo es un tipo de oscilador controlado por voltaje. En su forma más básica, consiste en un número impar de puertas inversoras colocadas en un bucle cerrado. En las entradas de alimentación de las puertas se conecta la señal a modular. La señal ya modulada aparece entre la salida y la entrada de cualquier par de puertas.
 	
 	Esta es la representación simbólica de una puerta inversora, con sus conexiones nombradas:
 	\begin{figure}[H]
@@ -600,7 +600,9 @@ hmargin=3cm
 	\end{figure}
 	\footnotetext{Fuente: \cite{eric-thesis}}
 	
-	Adimensionalizando el valor del voltaje de entrada, y asumiendo un comportamiento ideal del VCO, podemos expresar la relación entre entrada y salida como:
+	Donde $n$ es el número de puertas en el anillo y $\tau$ es el tiempo de activación de la puerta.
+	
+	Asumiendo un comportamiento ideal del VCO, podemos expresar la relación entre entrada y salida como:
 	\begin{figure}[h]
 		\begin{equation}
 		\label{vco-freq-ideal}
@@ -610,14 +612,100 @@ hmargin=3cm
 	\end{figure}
 	\footnotetext{Fuente: \cite{eric-thesis}}
 	
-	Donde $f_{VCO}$ es la frecuencia del oscilador, $f_{0}$ es la frecuencia en reposo (con una señal de entrada equivalente a 0), $K_{VCO}$ es la ganancia intrínseca en $Hz/V$, y $V_{i}$ es el valor de entrada adimensional, con valores comprendidos entre -1 y 1.
+	Donde $f_{VCO}$ es la frecuencia del oscilador, $f_{0}$ es la frecuencia en reposo (con una señal de entrada equivalente a 0), $K_{VCO}$ es la ganancia intrínseca en $Hz/V$, y $V_{i}$ es el valor de voltaje de entrada.
 	
+	Viendo el oscilador como un integrador, y tomando la fase de la señal como salida, en vez de la frecuencia, hacemos el siguiente análisis:
 	
+	\begin{figure}[h]
+		\begin{equation}
+		\label{vco-phase}
+		\theta(t) = 2\pi\int_{0}{t}f_{VCO}(\tau)d\tau = 2\pi f_{0}t + 2\pi K_{VCO}\int_{0}{t}x(\tau)d\tau
+		\end{equation}
+		\footnotemark
+	\end{figure}
+	\footnotetext{Fuente: \cite{eric-thesis}}
 	
+	Haciendo un análisis en frecuencia, la transformada de laplace del oscilador resulta así:
 	
-	
+	\begin{figure}[h]
+		\begin{equation}
+		\label{vco-laplace}
+		\frac{K_{VCO}}{s}
+		\end{equation}
+		\footnotemark
+	\end{figure}
+	\footnotetext{Fuente: \cite{eric-thesis}}
 	
 
+	Como se puede observar, la señal que entra al oscilador es analógica, mientras que la que sale ya es digital. Con pocos componentes, se consigue un integrador y cuantificador que funciona principalmente en el ámbito digital, evitando las restricciones que supone el procesado de una señal analógica, como se comentó en la introducción. De aquí surge el interés de los osciladores en anillo en su uso en ADCs.
+	
+	\section{Osciladores en anillo en ADCs}
+	
+	\subsection{Como parte de arquitecturas ya existentes}
+	Ya que estos osciladores actúan como un integrador, pueden usarse en arquitecturas de ADC ya establecidas, como los \sigmadelta.
+	
+	Este es un ejemplo de un modulador \sigmadelta de segundo orden con un VCO en anillo sustituyendo el segundo integrador y el cuantificador.
+	\begin{figure}[H]
+		\includegraphics[width=0.7\textwidth]{sd-with-vco.png}
+		\caption[Modulador \sigmadelta con un VCO]{Modulador \sigmadelta con un VCO\protect\footnotemark}
+		\label{fig:sd-with-vco.png}
+	\end{figure}
+	\footnotetext{Fuente: \cite{eric-thesis}}
+	
+	En rendimiento es equivalente a una implementación habitual con opamps, pero con menor consumo y número de componentes. TODO: corroborar con eric
+	
+	\subsection{Arquitecturas con solo oscilador en anillo}
+
+	Además de la integración, un VCO en anillo también se encarga de la cuantificación. Así, se puede obtener un ADC con solo este componente.
+	
+	La forma más básica consiste en solo un VCO con un circuito sample-and-hold y un circuito para sacar la primera diferencia.
+	\begin{figure}[H]
+		\includegraphics[width=0.6\textwidth]{vco-adc-open-loop.png}
+		\caption[ADC con VCO en bucle abierto]{ADC con VCO en bucle abierto\protect\footnotemark}
+		\label{fig:vco-adc-open-loop.png}
+	\end{figure}
+	\footnotetext{Fuente: \cite{eric-thesis}}
+	
+	Haciendo un análisis en frecuencia de este sistema, tenemos:
+	\begin{figure}[H]
+		\includegraphics[width=0.6\textwidth]{vco-adc-open-loop-lp.png}
+		\caption[Sistema con bucle abierto]{Sistema con bucle abierto\protect\footnotemark} %TODO: mejor nombre para esto
+		\label{fig:vco-adc-open-loop-lp.png}
+	\end{figure}
+	\footnotetext{Fuente: \cite{eric-thesis}}
+	
+	\begin{figure}[h]
+		\begin{equation}
+		\label{vco-open-loop-laplace}
+		Y(s)=2\pi K_{VCO}X(s) + (1 - z^{-1})Q(s)
+		\end{equation}
+	\end{figure}
+	
+	Donde $Q$ es el ruido de cuantificación del VCO, que toma como señal aleatoria aditiva a la salida del VCO. Tras la primera diferencia, el ruido de cuantificación sufre %TODO: qué sufre???
+	
+	Aunque el rendimiento de esta configuración es similar a los \sigmadelta convencionales, el VCO aporta un gran problema: la curva de respuesta voltaje-frecuencia no es lineal, porque el tiempo de activación de las puertas (ecuación \ref{vco-freq-sw-t}) varía en función de la alimentación de las puertas; en el caso de un oscilador en anillo, esta alimentación es la señal a modular. Esto provoca distorsión en la cuantificación, con lo que se pierde en resolución en el muestreo.
+	
+	Las soluciones más comunes a este problema son:
+	
+	\begin{itemize}
+		\item Calibración Digital: Se hace un análisis de la curva de respuesta, se crea una tabla de mapeo entrada-salida, y por se hace la corrección por interpolación en un circuito digital. Aumenta mucho el número de componentes y el consumo.
+		
+		\item Modulación previa al VCO: Se coloca un modulador, habitualmente de tipo PWM, para limitar la frecuencia de oscilación de la señal que entra en el VCO. Es una solución más, sencilla, pero limita el ancho de banda para frecuencias de señal muy altas.
+		
+		\item Reducción de la señal de entrada: Si se consigue lo suficiente, se reduce el impacto de la amplitud de la señal en la linealidad del sistema. Algunas maneras usadas para esto son la inclusión de un ADC más básico antes del VCO, cuya señal se resta a la entrada. Así se consigue disminuir la frecuencia de la señal que entra al VCO. Este método necesita de más componentes que trabajan con señales analógicas, con el consecuente aumento en consumo y espacio ocupado.
+		
+		\item Ajuste por circuito: Ajustando individualmente la alimentación de las puertas con componentes pasivos se puede paliar la no linealidad, pero esta técnica pierde fiabilidad una vez se toman en cuenta los errores de fabricación, la temperatura, y pequeñas variaciones en voltaje de alimentación.
+	\end{itemize}
+	
+	Ninguna de las soluciones anteriores es perfecta.
+	
+	\section{VCO con realimentación negativa}
+	
+	
+	
+	
+	
+	
 	
 
 \chapter{Conclusiones (?)}
