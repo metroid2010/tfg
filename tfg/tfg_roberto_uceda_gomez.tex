@@ -280,7 +280,7 @@ hmargin=3cm
 	\textbf{Palabras clave: ADC-VCO, Oscilador en anillo, Conversión Analógico-Digital, CMOS}
 	% Escribir las palabras clave aquí
 	
-	TODO
+	%TODO
 	\vfill
 \end{abstract}
 	\newpage % página en blanco o de cortesía
@@ -295,7 +295,7 @@ hmargin=3cm
 
 \setcounter{page}{5}
 	
-	TODO
+	%TODO
 		
 	\vfill
 	
@@ -373,16 +373,14 @@ hmargin=3cm
 	\section{Objetivos}
 	
 	El grueso de este trabajo se encuentra en el plano teórico. El primer paso es realizar un estudio de las arquitecturas de ADC ya existentes, centrándose en aquellas que emplean VCOs. A partir de este estudio, se estudiará la viabilidad de varias ideas de diferentes publicaciones que aún no han sido implementadas. Para esto, se utilizarán herramientas de simulación basadas en SPICE. Una vez probada la efectividad de la arquitectura, la siguiente tarea será montar un circuito con componentes discretos sobre protoboard, medir los parámetros de funcionamiento, y así dejar demostrada la factibilidad de la arquitectura.
-	TODO: consultar Eric
+	%TODO: consultar Eric
 
 	\section{Marco regulador}
-	TODO	
-	preguntar a Eric
+	%TODO preguntar a Eric
 	
 	
 	\section{Esquema de este documento}
-	TODO
-	por decidir
+	%TODO por decidir
 	
 
 	
@@ -535,21 +533,20 @@ hmargin=3cm
 	Como se puede observar, ambas opciones trabajan en ámbito analógico.
 	
 	Las principales desventajas de la conversión por modulador \sigmadelta son la necesidad de una frecuencia de muestreo muy alta respecto a la original, lo cual es un problema a la hora de convertir señales de muy alta frecuencia;
-	TODO: añadir más desventajas
+	%TODO: añadir más desventajas
 	
-	TODO: explicar VCO (o mejor en desarrollo?)
 
 	
 \chapter{Análisis}
 	
-	TODO: nombre para este capítulo
+	%TODO: nombre para este capítulo
 	
 	En este capítulo se expone el análisis de una nueva arquitectura de ADC que emplea un VCO como cuantificador e integrador.
 	
 	\section{Idea inicial}
 	
 	La idea fundamental de la nueva arquitectura es sustituir el integrador y el cuantificador de un ADC de tipo \sigmadelta por un VCO. Esto eliminaría la necesidad de un amplificador operacional presente en un \sigmadelta, rebajando por tanto el número de componentes necesarios y el consumo total del sistema.
-	TODO: preguntar a Eric la fuente original de la idea
+	%TODO: preguntar a Eric la fuente original de la idea
 	
 	El primer paso para desarrollar el estudio es comprender cómo funciona un VCO.
 	
@@ -589,7 +586,8 @@ hmargin=3cm
 		\label{fig:vco-sch.png}
 	\end{figure}
 
-	El número impar de puertas inversoras provoca un estado de inestabilidad en el oscilador. Dado que hay una pequeña demora en la activación de las puertas por (TODO: por qué hay demora en activación?), y por la realimentación positiva en el anillo, se crean señales alternativas entre un 1 lógico y un 0 lógico. La frecuencia a la que estas señales cambian es proporcional al voltaje aplicado en la alimentación de las puertas (VCC en la figuras \ref{fig:inverter-symbol.png} y \ref{fig:inverter-sch.png}). La frecuencia de oscilación sigue la siguiente fórmula:
+	El número impar de puertas inversoras provoca un estado de inestabilidad en el oscilador. Dado que hay una pequeña demora en la activación de las puertas por %TODO: por qué hay demora en activación?
+	, y por la realimentación positiva en el anillo, se crean señales alternativas entre un 1 lógico y un 0 lógico. La frecuencia a la que estas señales cambian es proporcional al voltaje aplicado en la alimentación de las puertas (VCC en la figuras \ref{fig:inverter-symbol.png} y \ref{fig:inverter-sch.png}). La frecuencia de oscilación sigue la siguiente fórmula:
 	
 	\begin{figure}[h]
 		\begin{equation}
@@ -652,7 +650,7 @@ hmargin=3cm
 	\end{figure}
 	\footnotetext{Fuente: \cite{eric-thesis}}
 	
-	En rendimiento es equivalente a una implementación habitual con opamps, pero con menor consumo y número de componentes. TODO: corroborar con eric
+	En rendimiento es equivalente a una implementación habitual con opamps, pero con menor consumo y número de componentes. %TODO: corroborar con eric
 	
 	\subsection{Arquitecturas con solo oscilador en anillo}
 
@@ -699,7 +697,24 @@ hmargin=3cm
 	
 	Ninguna de las soluciones anteriores es perfecta.
 	
-	\section{VCO con realimentación negativa}
+	\section{Análisis matemático del VCO con realimentación negativa}
+	
+	Una manera común de linealizar un sistema es con un bucle de retroalimentación negativa. Partiendo de un ADC con VCO en bucle abierto, la manera más sencilla de incluir retroalimentación es unir la salida con la entrada a través de un sumador. En el bucle debe existir una conversión de la salida digital del VCO a la entrada analógica del sistema.
+
+	\begin{figure}[H]
+		\includegraphics[width=0.5\textwidth]{vco-diagram-closed-loop.png}
+		\caption[ADC con VCO en bucle abierto, diagrama de bloques]{ADC con VCO en bucle cerrado, diagrama de bloques}
+		\label{fig:vco-diagram-closed-loop.png}
+	\end{figure}
+	
+	
+	\begin{figure}[h]
+		\begin{equation}
+		\label{vco-closed-loop-s}
+		Y(s)=2\pi K_{VCO}X(s) + (1 - z^{-1})Q(s)
+		\end{equation}
+	\end{figure}
+	
 	
 	
 	
