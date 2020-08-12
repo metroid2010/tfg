@@ -695,7 +695,7 @@ hmargin=3cm
 		\item Ajuste por circuito: Ajustando individualmente la alimentación de las puertas con componentes pasivos se puede paliar la no linealidad, pero esta técnica pierde fiabilidad una vez se toman en cuenta los errores de fabricación, la temperatura, y pequeñas variaciones en voltaje de alimentación.
 	\end{itemize}
 	
-	Ninguna de las soluciones anteriores es perfecta.
+	Ninguna de las soluciones anteriores es perfecta. %TODO: terminar esto
 	
 	\section{Análisis matemático del VCO con realimentación negativa}
 	
@@ -707,14 +707,56 @@ hmargin=3cm
 		\label{fig:vco-diagram-closed-loop.png}
 	\end{figure}
 	
+	Haciendo un análisis del sistema, podemos despejar la función de transferencia del sistema:
 	
-	\begin{figure}[h]
-		\begin{equation}
+	\begin{figure}[H]
 		\label{vco-closed-loop-s}
-		Y(s)=2\pi K_{VCO}X(s) + (1 - z^{-1})Q(s)
+		\begin{equation}
+		\begin{array}{lcl}
+		VCO & : & \frac{K_{VCO}}{s} \\
+		Y(s) &=& Q(s) + \frac{K_{VCO}}{s}(X(s) - \beta Y(s) ) \\
+		Y(s) &=& Q(s) + \frac{K_{VCO}}{s}X(s) - \frac{K_{VCO} \beta}{s}Y(s) \\
+		Y(s) (1 + \frac{K_{VCO}\beta}{s}) &=& Q(s) + \frac{K_{VCO}}{s}X(s) \\
+		Y(s) (\frac{s + K_{VCO}\beta}{s}) &=& Q(s) + \frac{K_{VCO}}{s}X(s) \\
+		Y(s) &=& \frac{s}{s + K_{VCO}\beta}Q(s) + \frac{K_{VCO}}{s + K_{VCO}\beta}X(s) \\
+		\end{array}
 		\end{equation}
 	\end{figure}
 	
+	Donde $Y(s)$ es la señal de salida, $X(s)$ es la señal de entrada, $K_{VCO}$ es la ganancia del VCO, $\beta$ es la ganancia del lazo de realimentación, y $Q(s)$ es el ruido de cuantificación modelado como una señal aditiva tras el VCO.
+	
+	Respecto a los términos a la derecha de la ecuación superior, podemos deducir el siguiente comportamiento del sistema en función de la frecuencia:
+	
+	\begin{figure}[H]
+		\label{vco-closed-loop-terms-x}
+		\begin{equation}
+		\begin{array}{lcl}
+		\frac{K_{VCO}}{s + K_{VCO}\beta}X(s) & \\
+		\frac{K_{VCO}}{s + K_{VCO}\beta}, s \to \infty: & = 0 \\
+		\frac{K_{VCO}}{s + K_{VCO}\beta}, s \to 0: & = \infty \\
+		\end{array}
+		\end{equation}
+	\end{figure}
+
+	\begin{figure}[H]
+		\label{vco-closed-loop-terms-q}
+		\begin{equation}
+		\begin{array}{lcl}
+		\frac{s}{s + K_{VCO}\beta}Q(s) & \\
+		\frac{s}{s + K_{VCO}\beta}, s \to 0: & = \infty \\
+		\frac{s}{s + K_{VCO}\beta}, s \to \infty: & = 0 \\
+		\end{array}
+		\end{equation}
+	\end{figure}
+
+	Así, tenemos que a altas frecuencias, el coeficiente de $Q(s)$ aumenta y el de $X(s)$ disminuye. A bajas frecuencias, ocurre lo contrario. Por lo tanto, este sistema aplica un filtro paso alto a $Q(s)$ y un filtro paso bajo a $X(s)$. Esto discrimina el ruido de cuantificación en la banda de frecuencias de la señal de entrada, si se ajustan correctamente las constantes $\beta$ y $K_{VCO}$.
+	
+	\subsection{Lazo de realimentación por capacidades conmutadas}
+	
+	Dado que la ganancia del VCO es relativamente estable y más compleja de manipular, en este estudio nos centramos en la ganancia en el lazo de realimentación. En el lazo es necesario hacer una conversión de la señal modulada digital, a la señal de entrada analógica. Para esto es necesario buscar un DAC relativamente sencillo para no volver a encontrarnos el problema que intentamos evitar: número de componentes y consumo. Además, los requisitos para el DAC no son especialmente restrictivos. Ya que el sistema en lazo cerrado tiende a estabilizarse por sí mismo, una conversión tosca % TODO: no me gusta esta palabra
+	y poco precisa es suficiente.
+	
+	La solución escogida es el uso de un sistema de capacidades conmutadas. En nuestra implementación, este se compone de dos transistores pareados CMOS, en una distribución casi idéntica de las puertas lógicas inversoras.
 	
 	
 	
