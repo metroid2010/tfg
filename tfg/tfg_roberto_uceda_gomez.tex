@@ -250,8 +250,8 @@ hmargin=3cm
 			\vspace*{1cm}
 		\begin{Large}
 			Tutor:
-			Eric Gutiérrez Fernández
-			Leganés, {fecha}
+			Eric Gutiérrez Fernández \\
+			Leganés, %TODO: fecha \\
 		\end{Large}
 	\end{center}
 	\vfill
@@ -756,15 +756,152 @@ hmargin=3cm
 	Dado que la ganancia del VCO es relativamente estable y más compleja de manipular, en este estudio nos centramos en la ganancia en el lazo de realimentación. En el lazo es necesario hacer una conversión de la señal modulada digital, a la señal de entrada analógica. Para esto es necesario buscar un DAC relativamente sencillo para no volver a encontrarnos el problema que intentamos evitar: número de componentes y consumo. Además, los requisitos para el DAC no son especialmente restrictivos. Ya que el sistema en lazo cerrado tiende a estabilizarse por sí mismo, una conversión tosca % TODO: no me gusta esta palabra
 	y poco precisa es suficiente.
 	
-	La solución escogida es el uso de un sistema de capacidades conmutadas. En nuestra implementación, este se compone de dos transistores pareados CMOS, en una distribución casi idéntica de las puertas lógicas inversoras.
+	La solución escogida es el uso de un sistema de capacidades conmutadas. En nuestra implementación, este se compone de dos transistores pareados CMOS, en una distribución casi idéntica a las puertas lógicas inversoras.
 	
+	\begin{figure}[H]
+		\includegraphics[width=0.6\textwidth]{sw-capacities-sch.png}
+		\caption[Esquemático de circuito de capacidades conmutadas]{Esquemático de circuito de capacidades conmutadas}
+		\label{fig:sw-capacities-sch.png}
+	\end{figure}
 	
+	El circuito consta de dos transistores CMOS, canal-n y canal-p, y un condensador conectado entre fuente y drenador de los transistores. La fuente de alimentación $V4$ se conecta a la fuente del transistor canal-p, y la señal modulada en PFM\footnote{Pulse Frequency Modulation, modulación en frecuencia de pulsos.} se conecta a las puertas de ambos transistores. La señal PFM actúa a modo de reloj para controlar la activación de los transistores, que actúan a modo de interruptores.
 	
+	Este es el diagrama simbólico del sistema:
 	
+	\begin{figure}[H]
+		\includegraphics[width=0.3\textwidth]{sw-capacities-symbol-1.png}
+		\caption[Diagrama de circuito de capacidades conmutadas]{Diagrama de circuito de capacidades conmutadas}
+		\label{fig:sw-capacities-symbol-1.png}
+	\end{figure}
+
+	Donde $\Phi$ es una señal de reloj de frecuencia variable y $\hat{\Phi}$ es la inversa del mismo reloj.
 	
+	A continuación se presenta un análisis del comportamiento en función del valor del reloj:
+	
+	\begin{figure}[H]
+		\includegraphics[width=0.4\textwidth]{sw-capacities-symbol-2.png}
+		\caption[Diagrama para $\Phi=1$]{Diagrama para $\Phi=1$}
+		\label{fig:sw-capacities-symbol-2.png}
+	\end{figure}
+	Para $\Phi = 1$ y $\hat{\Phi} = 0$, el transistor superior se activa cerrando el circuito, y el inferior se desactiva abriéndolo. Esto permite el paso de corriente momentáneo al condensador $C$, que durante este semiperiodo se carga.
+	
+	\begin{figure}[H]
+		\includegraphics[width=0.4\textwidth]{sw-capacities-symbol-3.png}
+		\caption[Diagrama para $\Phi=0$]{Diagrama para $\Phi=0$}
+		\label{fig:sw-capacities-symbol-3.png}
+	\end{figure}
+	Para $\Phi = 0$ y $\hat{\Phi} = 1$, el transistor superior se desactiva abriendo el circuito mientras que el inferior se cierra conectando el condensador con la tierra. Así, se crea un flujo de corriente desde el condensador que lo descarga.
+	
+	Las siguientes ecuaciones describen la corriente de salida en función de la frecuencia.
+	
+	\begin{figure}[H]
+		\label{sw-capacities-eqs}
+		\begin{equation}
+		\begin{array}{c}
+		I_C = \frac{\Delta Q}{\Delta t} = \\
+		= \frac{C(V_{A}-V_{B})}{T} = Cf(V_{A}-V_{B}) \\
+		si\ \ V_{A} = V_{dd}\ \ y\ \ V_{B} = V_{GND} = 0 \implies I_C = Cf(V_{dd})
+		\end{array}
+		\end{equation}
+	\end{figure}
+	
+	Donde $I_C$ es la corriente media que pasa por el condensador.
+	
+	Teniendo corriente equivalente y voltaje de referencia, podemos modelar el sistema como una impedancia variable.
+	
+	\begin{figure}[H]
+		\label{sw-capacities-var-res}
+		\begin{equation}
+		\begin{array}{c}
+		Z_{eq} = \frac{V_{dd}}{I_C} = \frac{V_{dd}}{Cf(V_{dd})} = \frac{1}{fC} \\
+		\end{array}
+		\end{equation}
+	\end{figure}
+	
+	Así obtenemos una resistencia variable en función de la frecuencia de entrada.
+	
+	Debemos tener en cuenta que los transistores tienen unas ciertas corrientes parasíticas fuera de su modelo ideal. Estas corrientes provocan que un transistor abierto tenga una impedancia muy alta, pero no cero, y uno cerrado tenga una impedancia muy baja, pero nunca nula. Relacionando este paso de corriente por los transistores con un voltaje de referencia, podemos modelar los efectos parasíticos como una impedancia intrínseca en los transistores.
+	
+	Este es el circuito equivalente:
+	\begin{figure}[H]
+		\includegraphics[width=0.2\textwidth]{sw-capacities-var-res-block.png}
+		\caption[Diagrama de bloques del sistema de impedancias equivalente]{Diagrama de bloques del sistema de impedancias equivalente}
+		\label{fig:sw-capacities-var-res-block.png}
+	\end{figure}
+	
+	Donde $Z_{eq}$ es la impedancia variable equivalente, y $Z_{on}$ y $Z_{off}$ son las impedancias de transistor activado y en corte. Como se abren y cierran de manera alternativa, y asumiendo un comportamiento ideal del sistema (activación/desactivación instantánea, sin solapamiento), el circuito equivalente tendrá una impedancia de cada en serie. Estas impedancias de los transistores dependen de factores como tecnología de fabricación, tamaño, y defectos de fabricación. En cualquier caso, $Z_{on}$ es muy bajo, y $Z_{off}$ es muy alto.
+	
+	Queda este modelo ideal para el DAC por capacidades conmutadas:
+	
+	\begin{figure}[H]
+		\label{sw-capacities-i_eq}
+		\begin{equation}
+		\begin{array}{c}
+		I_{eq} = \frac{V_{dd}}{\frac{1}{fC} + Z_{on} + Z_{off}} \\
+		\end{array}
+		\end{equation}
+	\end{figure}
+	
+	Con esto, ya tenemos nuestro DAC que transforma la señal modulada en frecuencia de 1 bit de manera sencilla y con pocos componentes.
+	
+	\section{Simulaciones del modelo}
+	
+	Tras el análisis matemático expuesto en las secciones anteriores, procedemos a realizar simulaciones para comprobar la validez de la arquitectura. Usaremos LTSpice para elaborar esquemáticos y lanzar simulaciones, y Matlab para analizar los resultados.
+	
+	En estas simulaciones se han usado las librerías de transistores CMOS de la compañía TSMC, cedidas al Departamento de Tecnologías Electrónicas. Estas librerías tienen los parámetros necesarios para poder simular su comportamiento en un programa SPICE.
+	
+	\subsection{Simulación del DAC por capacidades conmutadas}
+	
+	Este es el esquemático en LTSpice usado para simular el DAC por capacidades conmutadas:
+	
+	\begin{figure}[H]
+		\includegraphics[width=0.8\textwidth]{ltspice-sw-cap-empty.png}
+		\caption[Circuito en LTSpice del modelo de DAC por capacidades conmutadas]{Circuito en LTSpice del modelo de DAC por capacidades conmutadas}
+		\label{fig:ltspice-sw-cap-empty.png}
+	\end{figure}
+	
+	En la esquina superior derecha se reúnen los parámetros básicos de los transistores: sus dimensiones en ancho y largo. Los valores usados se corresponden con %TODO: por qué usamos estos tamaños de transistor para simular??
+	%TODO: explicar por qué tienen tamaños diferentes??
+	El voltaje de referencia escogido, 1.8V, %TODO: por qué 1.8??
+	
+	Para conseguir la curva de respuesta del sistema, podemos hacerlo por interpolación, tomando varios resultados discretos para diferentes valores de entrada, en este caso, frecuencia de reloj, o podemos usar una entrada que incremente su valor de forma lineal con el tiempo. Como no existe un componente con este comportamiento en LTSpice, se ha creado uno nuevo:
+	
+	\begin{figure}[H]
+		\includegraphics[width=0.8\textwidth]{ltspice-clk-freq.png}
+		\caption[Esquemático de reloj con frecuencia incremental]{Esquemático de reloj con frecuencia incremental}
+		\label{fig:ltspice-clk-freq.png}
+	\end{figure}
+
+	Este componente utiliza un interruptor y una fuente de voltaje cuyo valor se calcula con una función sinusoidal en función del tiempo.
+	\begin{figure}[H]
+		\label{sw-capacities-i_eq}
+		\begin{equation}
+		\begin{array}{c}
+			V=sin(2*\pi*t*(f_{init}+f_{gain}*t))+V_{offset}
+		\end{array}
+		\end{equation}
+	\end{figure}
+
+	Donde $t$ es el tiempo en cada paso de la simulación, $f_{init}$ es la frecuencia en $t=0$ del sistema, $f_{gain}$ es un parámetro que dicta el incremento de la frecuencia por unidad de tiempo, y $V_{offset}$ es el voltaje medio de la fuente. Las entrada de este circuito es $f_{gain}$ y el voltaje nominal del reloj $clk\_v$. Además, para que el 0 lógico del reloj tenga un voltaje igual a cero, hay una resistencia \textit{pull-down} justo antes de la salida.
+	
+	\begin{figure}[H]
+		\includegraphics[width=0.8\textwidth]{ltspice-sw-with-clk-freq.png}
+		\caption[Esquemático del circuito de capacidades conmutadas con reloj de frecuencia variable]{Esquemático del circuito de capacidades conmutadas con reloj de frecuencia variable}
+		\label{fig:ltspice-sw-with-clk-freq.png}
+	\end{figure}
+
+	Una vez añadido el componente, y dando valores a las variables, procedemos a simular.
 	
 	
 
+	
+	\subsection{Modelo sencillo de ADC con oscilador en anillo} %TODO: este título tampoco me gusta
+	
+	Tomaremos el modelo \ref{fig:vco-diagram-closed-loop.png} y usaremos LTSpice para montar el esquemático y obtener los resultados. %TODO: no me gusta la redacción de esto
+	
+	Este es el esquemático
+
+	
 \chapter{Conclusiones (?)}
 \chapter{Entorno socioeconómico (?)}
 \chapter{Presupuesto / planificación / proceso (?)}
