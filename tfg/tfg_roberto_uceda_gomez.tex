@@ -214,6 +214,8 @@ hmargin=3cm
 \usepackage{enumitem}
 \newcommand{\sigmadelta}{$\Sigma\Delta\; $}
 \usepackage{microtype}
+\usepackage{multicol}
+
 
 %-------------
 %	DOCUMENTO
@@ -850,6 +852,84 @@ hmargin=3cm
 	
 	En estas simulaciones se han usado las librerías de transistores CMOS de la compañía TSMC, cedidas al Departamento de Tecnologías Electrónicas. Estas librerías tienen los parámetros necesarios para poder simular su comportamiento en un programa SPICE.
 	
+	\subsection{Herramientas de simulación}
+	
+	\subsubsection{Reloj de frecuencia variable en LTSpice}
+	Para conseguir la curva de respuesta un sistema, podemos hacerlo por interpolación, tomando varios resultados discretos para diferentes valores de entrada, en este caso, frecuencia de reloj, o podemos usar una entrada que incremente su valor de forma lineal con el tiempo. Como no existe un componente con este comportamiento en LTSpice, se ha creado uno nuevo:
+	
+	\begin{figure}[H]
+		\includegraphics[width=0.8\textwidth]{ltspice-clk-freq.png}
+		\caption[Esquemático de reloj con frecuencia incremental]{Esquemático de reloj con frecuencia incremental}
+		\label{fig:ltspice-clk-freq.png}
+	\end{figure}
+	
+	Este componente utiliza un interruptor y una fuente de voltaje cuyo valor se calcula con una función sinusoidal en función del tiempo.
+	\begin{figure}[H]
+		\label{sw-capacities-i_eq}
+		\begin{equation}
+		\begin{array}{c}
+		V=sin(2*\pi*t*(f_{init}+f_{gain}*t))+V_{offset}
+		\end{array}
+		\end{equation}
+	\end{figure}
+	
+	Donde $t$ es el tiempo en cada paso de la simulación, $f_{init}$ es la frecuencia en $t=0$ del sistema, $f_{gain}$ es un parámetro que dicta el incremento de la frecuencia por unidad de tiempo, y $V_{offset}$ es el voltaje medio de la fuente. Las entrada de este circuito es $f_{gain}$ y el voltaje nominal del reloj $clk\_v$. Además, para que el 0 lógico del reloj tenga un voltaje igual a cero, hay una resistencia \textit{pull-down} justo antes de la salida.
+	
+	Para comprobar que el componente funciona, a continuación se presenta una simulación rápida. Los valores de las variables para esta simulación son los siguientes:
+	\begin{table}[H]
+		\label{tab:parameters-clk-freq-sim}
+		\caption{Parámetros de simulación del reloj de frecuencia incremental}
+		\begin{tabular}{lr}
+			clk\_v & 1V \\
+			f\_init & 3e3 \\
+			f\_gain & 3e7 \\
+			Paso de simulación & 1ns \\
+			Tiempo de simulación & 10ms
+		\end{tabular}
+	\end{table}
+
+	Este es el resultado de la simulación:
+	
+	\begin{figure}[H]
+		\includegraphics[width=1\textwidth]{clk-freq-sim-waveform.PNG}
+		\caption[Simulación: Forma de onda del voltaje en la salida clk\_out]{Simulación: Forma de onda del voltaje en la salida clk\_out}
+		\label{fig:clk-freq-sim-waveform.PNG}
+	\end{figure}
+	
+	Se puede observar que la forma de onda del reloj es cuadrada, y va aumentando según pasa el tiempo de simulación. Haciendo zoom en una zona cualquiera, y tomando medidas, podemos calcular la frecuencia de reloj en función de $1/T$:
+
+	\begin{figure}[H]
+		\includegraphics[width=1\textwidth]{clk-freq-sim-waveform-zoom.PNG}
+		\caption[Simulación: zoom en sección de la forma de onda]{Simulación: zoom en sección de la forma de onda}
+		\label{fig:clk-freq-sim-waveform-zoom.PNG}
+	\end{figure}
+	
+	En esta sección, el periodo es aproximadamente $T=3.2us$. Las ecuaciones que describen la frecuencia real como la teórica son las siguientes:
+	
+	\begin{figure}[H]
+		\label{clk-freq_eqs_freq}
+		\begin{equation}
+		\begin{array}{c}
+		Real:\; f = \frac{1}{3.2e-6} = 312.5kHz \\
+		Te\acute{o}rico:\; time\approx5.111e-3 \implies f = (3e3 + 3e7 * time) = 156.3kHz \\
+		\end{array}
+		\end{equation}
+	\end{figure}
+
+	A la vista queda una cierta discrepancia entre valores. Esto se debe a falta de precisión absoluta en la simulación, y a errores en la toma de medidas de manera visual.
+	
+	Es necesario un método que permita el análisis de los datos de manera programática, y no manual. Ya que LTSpice permite exportar las formas de onda como matriz de puntos x-y, podemos usar Matlab para el análisis.
+	
+	\subsubsection{Procesado de formas de onda en Matlab}
+	
+	Partiendo de una matriz de puntos x-y (voltaje-tiempo), nuestro objetivo es producir una recta frecuencia-tiempo.
+	
+	
+	
+	
+	
+	A la vista de este problema, y dado que 
+	
 	\subsection{Simulación del DAC por capacidades conmutadas}
 	
 	Este es el esquemático en LTSpice usado para simular el DAC por capacidades conmutadas:
@@ -864,33 +944,12 @@ hmargin=3cm
 	%TODO: explicar por qué tienen tamaños diferentes??
 	El voltaje de referencia escogido, 1.8V, %TODO: por qué 1.8??
 	
-	Para conseguir la curva de respuesta del sistema, podemos hacerlo por interpolación, tomando varios resultados discretos para diferentes valores de entrada, en este caso, frecuencia de reloj, o podemos usar una entrada que incremente su valor de forma lineal con el tiempo. Como no existe un componente con este comportamiento en LTSpice, se ha creado uno nuevo:
-	
-	\begin{figure}[H]
-		\includegraphics[width=0.8\textwidth]{ltspice-clk-freq.png}
-		\caption[Esquemático de reloj con frecuencia incremental]{Esquemático de reloj con frecuencia incremental}
-		\label{fig:ltspice-clk-freq.png}
-	\end{figure}
-
-	Este componente utiliza un interruptor y una fuente de voltaje cuyo valor se calcula con una función sinusoidal en función del tiempo.
-	\begin{figure}[H]
-		\label{sw-capacities-i_eq}
-		\begin{equation}
-		\begin{array}{c}
-			V=sin(2*\pi*t*(f_{init}+f_{gain}*t))+V_{offset}
-		\end{array}
-		\end{equation}
-	\end{figure}
-
-	Donde $t$ es el tiempo en cada paso de la simulación, $f_{init}$ es la frecuencia en $t=0$ del sistema, $f_{gain}$ es un parámetro que dicta el incremento de la frecuencia por unidad de tiempo, y $V_{offset}$ es el voltaje medio de la fuente. Las entrada de este circuito es $f_{gain}$ y el voltaje nominal del reloj $clk\_v$. Además, para que el 0 lógico del reloj tenga un voltaje igual a cero, hay una resistencia \textit{pull-down} justo antes de la salida.
-	
 	\begin{figure}[H]
 		\includegraphics[width=0.8\textwidth]{ltspice-sw-with-clk-freq.png}
 		\caption[Esquemático del circuito de capacidades conmutadas con reloj de frecuencia variable]{Esquemático del circuito de capacidades conmutadas con reloj de frecuencia variable}
 		\label{fig:ltspice-sw-with-clk-freq.png}
 	\end{figure}
 
-	Una vez añadido el componente, y dando valores a las variables, procedemos a simular.
 	
 	
 
