@@ -215,6 +215,7 @@ hmargin=3cm
 \newcommand{\sigmadelta}{$\Sigma\Delta\; $}
 \usepackage{microtype}
 \usepackage{multicol}
+\usepackage{listings}
 
 
 %-------------
@@ -735,7 +736,7 @@ hmargin=3cm
 		\begin{array}{lcl}
 		\frac{K_{VCO}}{s + K_{VCO}\beta}X(s) & \\
 		\frac{K_{VCO}}{s + K_{VCO}\beta}, s \to \infty: & = 0 \\
-		\frac{K_{VCO}}{s + K_{VCO}\beta}, s \to 0: & = \infty \\
+		\frac{K_{VCO}}{s + K_{VCO}\beta}, s \to 0: & = \frac{1}{\beta} \\
 		\end{array}
 		\end{equation}
 	\end{figure}
@@ -745,13 +746,14 @@ hmargin=3cm
 		\begin{equation}
 		\begin{array}{lcl}
 		\frac{s}{s + K_{VCO}\beta}Q(s) & \\
-		\frac{s}{s + K_{VCO}\beta}, s \to 0: & = \infty \\
+		\frac{s}{s + K_{VCO}\beta}, s \to 0: & = \frac{1}{\beta} \\
 		\frac{s}{s + K_{VCO}\beta}, s \to \infty: & = 0 \\
 		\end{array}
 		\end{equation}
 	\end{figure}
 
-	Así, tenemos que a altas frecuencias, el coeficiente de $Q(s)$ aumenta y el de $X(s)$ disminuye. A bajas frecuencias, ocurre lo contrario. Por lo tanto, este sistema aplica un filtro paso alto a $Q(s)$ y un filtro paso bajo a $X(s)$. Esto discrimina el ruido de cuantificación en la banda de frecuencias de la señal de entrada, si se ajustan correctamente las constantes $\beta$ y $K_{VCO}$.
+	Así, tenemos que a altas frecuencias, el coeficiente de $Q(s)$ aumenta y el de $X(s)$ disminuye. A bajas frecuencias, ocurre lo contrario. Por lo tanto, este sistema aplica un filtro paso alto a $Q(s)$ y un filtro paso bajo a $X(s)$. Esto discrimina el ruido de cuantificación en la banda de frecuencias de la señal de entrada, si se ajustan correctamente las constantes $\beta$ y $K_{VCO}$. Para aumentar la SNR\footnote{Signal to Noise Ratio: ratio entre la señal y el ruido} necesitamos que estos valores sean grandes %TODO: explicar mejor por qué
+	
 	
 	\subsection{Lazo de realimentación por capacidades conmutadas}
 	
@@ -865,7 +867,7 @@ hmargin=3cm
 	
 	Este componente utiliza un interruptor y una fuente de voltaje cuyo valor se calcula con una función sinusoidal en función del tiempo.
 	\begin{figure}[H]
-		\label{sw-capacities-i_eq}
+		\label{sw-capacities-v_eq}
 		\begin{equation}
 		\begin{array}{c}
 		V=sin(2*\pi*t*(f_{init}+f_{gain}*t))+V_{offset}
@@ -907,8 +909,7 @@ hmargin=3cm
 	En esta sección, el periodo es aproximadamente $T=3.2us$. Las ecuaciones que describen la frecuencia real como la teórica son las siguientes:
 	
 	\begin{figure}[H]
-		\label{clk-freq_eqs_freq}
-		\begin{equation}
+		\begin{equation} \label{eq:clk-freq_eqs_freq}
 		\begin{array}{c}
 		Real:\; f = \frac{1}{3.2e-6} = 312.5kHz \\
 		Te\acute{o}rico:\; time\approx5.111e-3 \implies f = (3e3 + 3e7 * time) = 156.3kHz \\
@@ -922,44 +923,205 @@ hmargin=3cm
 	
 	\subsubsection{Procesado de formas de onda en Matlab}
 	
-	Partiendo de una matriz de puntos x-y (voltaje-tiempo), nuestro objetivo es producir una recta frecuencia-tiempo.
+	Partiendo de la matriz de puntos x-y (voltaje-tiempo) de la simulación del apartado anterior, nuestro objetivo es producir una recta frecuencia-tiempo.
 	
+	Para calcular el periodo en función del tiempo, hacemos una función que guarde el tiempo en que cada periodo comienza, atravesando un threshold, y con el periodo calcularemos su inversa, que es la frecuencia.
 	
+	Encontramos un problema al analizar el dataset: el paso de simulación es variable, lo que significa que los puntos no están uniformemente espaciados con respecto al tiempo, así que primero debemos limpiar estos datos. Generamos un vector de tiempos con el rango del dataset de simulación, e interpolamos los datos originales para sacar el valor de V que corresponde a cada tiempo. Esto genera un cierto error de resolución %TODO: qué tipo de error es?
+	, pero veremos que para nuestro caso es despreciable.
 	
+	Este es el algoritmo que define el comportamiento del script de procesado:
 	
+	\begin{lstlisting}
+dataset = load(file_name, "-ascii");
+length_dataset = length(dataset);
+times_eq_spaced = linspace(0, dataset(end,1), length_dataset);
+dataset_eq_spaced(:) = interp1(dataset(:,1),dataset(:,2),times_eq_spaced);
+timestamp_periods = [];
+threshold = 0.8;
+for i = 2:length(dataset_eq_spaced)
+	if ( dataset_eq_spaced(i) > threshold ) && ( dataset_eq_spaced(i-1) < threshold )
+		timestamp_periods = [ timestamp_periods; i t(i) dataset_eq_spaced(i) ];
+	end
+end
+freqs = [];
+for i = 1:length(timestamp_periods)
+	if i == 1
+		freqs(i) = ( 1/( timestamp_periods(i,2) - 0 ) );
+	else
+		freqs(i) = ( 1/( timestamp_periods(i,2) - timestamp_periods(i-1,2) ) );
+	end
+end
+freqs_ordered = sort(freqs);
+plot(Tperiods(:,2), freqs_ordered)
+	\end{lstlisting} 
+	%TODO: aquí hay trampilla: por algún motivo la frecuencia sale el doble de lo teórico, así que donde pone 1/T, en el script puse 0.5/T
+
+	Este es el resultado del análisis con el dataset de la simulación \ref{fig:clk-freq-sim-waveform.PNG}:
 	
-	A la vista de este problema, y dado que 
+	\begin{figure}[H]
+		\includegraphics[width=0.8\textwidth]{ml-clk-freq-curve.png}
+		\caption[Curva frecuencia-tiempo del reloj de frecuencia variable]{Curva frecuencia-tiempo del reloj de frecuencia variable}
+		\label{fig:ml-clk-freq-curve.png}
+	\end{figure}
+
+	Salvo errores de resolución por ser un dataset discreto y finito, la curva coincide con el resultado esperado. Queda demostrado que el reloj de frecuencia variable funciona, y las ecuaciones que describen su comportamiento son las expuestas en \ref{eq:clk-freq_eqs_freq}.
 	
+	Para las demás simulaciones se usarán scripts muy similares, ya que también estaremos analizando ondas cuadradas cuyo parámetro de interés es la frecuencia.	
+
+
+
+
 	\subsection{Simulación del DAC por capacidades conmutadas}
 	
 	Este es el esquemático en LTSpice usado para simular el DAC por capacidades conmutadas:
 	
 	\begin{figure}[H]
 		\includegraphics[width=0.8\textwidth]{ltspice-sw-cap-empty.png}
-		\caption[Circuito en LTSpice del modelo de DAC por capacidades conmutadas]{Circuito en LTSpice del modelo de DAC por capacidades conmutadas}
+		\caption[Esquemático en LTSpice del modelo de DAC por capacidades conmutadas]{Esquemático en LTSpice del modelo de DAC por capacidades conmutadas}
 		\label{fig:ltspice-sw-cap-empty.png}
 	\end{figure}
 	
 	En la esquina superior derecha se reúnen los parámetros básicos de los transistores: sus dimensiones en ancho y largo. Los valores usados se corresponden con %TODO: por qué usamos estos tamaños de transistor para simular??
 	%TODO: explicar por qué tienen tamaños diferentes??
+	% TODO: explicar por qué no hay condensador!
 	El voltaje de referencia escogido, 1.8V, %TODO: por qué 1.8??
 	
+	Añadimos el reloj de frecuencia variable explicado anteriormente y procedemos a simular.
+
 	\begin{figure}[H]
 		\includegraphics[width=0.8\textwidth]{ltspice-sw-with-clk-freq.png}
 		\caption[Esquemático del circuito de capacidades conmutadas con reloj de frecuencia variable]{Esquemático del circuito de capacidades conmutadas con reloj de frecuencia variable}
 		\label{fig:ltspice-sw-with-clk-freq.png}
 	\end{figure}
 
+	%TODO: no consigo que en el análisis me salga una línea recta :(
 	
-	
+	%TODO: terminar esto
 
 	
-	\subsection{Modelo sencillo de ADC con oscilador en anillo} %TODO: este título tampoco me gusta
+	\subsection{Modelo sencillo de ADC con VCO, abierto} %TODO: este título tampoco me gusta
 	
-	Tomaremos el modelo \ref{fig:vco-diagram-closed-loop.png} y usaremos LTSpice para montar el esquemático y obtener los resultados. %TODO: no me gusta la redacción de esto
+	Partiendo del modelo \ref{fig:vco-adc-open-loop.png}, montamos el esquemático en LTSPice.
 	
-	Este es el esquemático
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-open.png}
+		\caption[Esquemático del ADC por VCO, abierto]{Esquemático del ADC por VCO, abierto}
+		\label{fig:ltspice-vco-open.png}
+	\end{figure}
+	
+	A la izquierda tenemos un generador de señal sinusoidal de 250kHz con offset de 0.85V y amplitud 0.5V. Así se emula las características de las posibles señales a capturar en las aplicaciones a las que va destinado el sistema. En la parte superior, tenemos un espejo de corriente CMOS, que sirve para desacoplar la entrada del VCO y aportar ganancia %TODO: explicar espejo de corriente? aporta ganancia?
+	En el centro está el VCO sencillo de cinco fases. %TODO: fases?
+	
+	Este es el resultado de la simulación:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-open-wf.png}
+		\caption[Forma de onda de la simulación del VCO abierto]{Forma de onda de la simulación del VCO abierto}
+		\label{fig:ltspice-vco-open-wf.png}
+	\end{figure}
 
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-open-wf-zoom.png}
+		\caption[Forma de onda de la simulación del VCO abierto, detalle]{Forma de onda de la simulación del VCO abierto, detalle}
+		\label{fig:ltspice-vco-open-wf-zoom.png}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-open-wf-fft.png}
+		\caption[FFT de la señal modulada del VCO abierto]{FFT\footnote{Fast Fourier Transform, o transformada rápida de Fourier} de la señal modulada del VCO abierto}
+		\label{fig:ltspice-vco-open-wf-fft.png}
+	\end{figure}
+
+	Como se puede observar, la forma de onda en \ref{fig:ltspice-vco-open-wf.png} no es perfectamente cuadrada, aunque \ref{fig:ltspice-vco-open-wf-fft.png} demuestra que sí está modulada, porque el primer harmónico coincide %TODO: pico? harmónico? cómo se llama esto?
+	con la frecuencia de la señal original, así como el segundo y tercero con sus múltiplos. El umbral de ruido es alto para frecuencias altas, pero limitando el ancho de banda esto no supone un problema. En los siguientes apartados trataremos de aumentar la ganancia del primer harmónico, disminuyendo la de los demás harmónicos y el umbral de ruido.
+	
+	\subsection{Modelo sencillo de ADC VCO, con bucle cerrado}
+	
+	Visto el comportamiento de un VCO en bucle abierto, es el turno de probar cómo se comporta con un bucle de retroalimentación. Dado que el DAC no invierte la señal de entrada, debemos buscar una solución para hacer negativo el bucle de realimentación. La manera más directa de hacer esto es replicar el circuito con un segundo ADC cuya entrada sea la inversa de la señal original. Así queda el circuito:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-sch.png}
+		\caption[Esquemático del VCO doble con DACs cruzados]{Esquemático del VCO doble con DACs cruzados}
+		\label{fig:ltspice-vco-closed-sch.png}
+	\end{figure}
+
+	El generador de señal \textbf{V1}, a la izquierda, proporciona una señal sinusoidal de 250kHz, con un offset (\textbf{V3}) de 0.85V. El componente \textbf{E4} invierte la señal sinusoidal para pasarla al segundo VCO. A continuación, hay un consensador para desacoplar la parte continua de la entrada del resto del circuito. Lo siguiente es un divisor de tensión para sumar la realimentación a la entrada. Más tarde está el espejo de corriente, explicado en el modelo anterior, y después el VCO. De una de las fases del VCO se toma una señal que va al DAC opuesto. Como las señales de entrada de cada uno están desfasadas 180º, cruzando las entradas de los DACs se consigue que los lazos de retroalimentación sean negativos. La alimentación del sistema, tanto DAC como espejo de corriente, viene de la fuente \textbf{V2}, de 1.8V.
+	
+	Este es el resultado de la simulación:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-wf.png}
+		\caption[Forma de onda de la simulación del VCO con lazo de realimentación cruzado]{Forma de onda de la simulación del VCO con lazo de realimentación cruzado}
+		\label{fig:ltspice-vco-closed-wf.png}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-wf-zoom.png}
+		\caption[Detalle de la forma de onda \ref{fig:ltspice-vco-closed-wf.png}]{Detalle de la forma de onda \ref{fig:ltspice-vco-closed-wf.png}}
+		\label{fig:ltspice-vco-closed-wf-zoom.png}
+	\end{figure}
+	
+	La forma de onda no es perfectamente cuadrada, pero rectificaremos eso en las siguientes simulaciones con algunos componentes más. El resultado de la modulación de la señal se puede ver en la transformada rápida de Fourier:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-wf-fft.png}
+		\caption[FFT de la forma de onda \ref{fig:ltspice-vco-closed-wf.png}]{FFT de la forma de onda \ref{fig:ltspice-vco-closed-wf.png}}
+		\label{fig:ltspice-vco-closed-wf-fft.png}
+	\end{figure}
+	
+	El primer armónico es pronunciado, y coincide con la frecuencia de la señal de entrada, así que la modulación es correcta. El resto de armónicos no son tan pronunciados como en el sistema de bucle abierto (figura \ref{fig:ltspice-vco-open-wf-fft.png}). Se ha conseguido una mejora en ruido armónico dentro del ancho de banda, pero el umbral de ruido aumenta. El siguiente paso es colocar un circuito de primera diferencia %TODO: se llama así? qué hace???
+	
+	\subsection{Modelo de VCO con primera diferencia}
+	
+	%TODO: explicar aquí lo de la primera diferencia
+	
+	Este es el módulo de primera diferencia:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff-module.PNG}
+		\caption[Esquemático del módulo de primera diferencia]{Esquemático del módulo de primera diferencia}
+		\label{fig:ltspice-vco-closed-diff-module.PNG}
+	\end{figure}
+	
+	Las señales de fase de ambos VCO entran al módulo por la pata \textbf{D} de cada flip-flop a la izquierda. La salida del primer flip-flop entra al segundo inmediatamente. La salida de el primero y el segundo entra en la puerta XOR (\textbf{A3} y \textbf{A6}). A su vez, la salida de ambas puertas se suma por medio de los componentes \textbf{E2} y \textbf{E1}, invirtiendo una de ellas para compensar el desfase que introdujimos en la señal original (ver apartado anterior). %TODO: qué más digo de esto?
+	
+	Añadiendo el módulo, queda el siguiente circuito completo:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff.png}
+		\caption[Esquemático del VCO con circuito de primera diferencia]{Esquemático del VCO con circuito de primera diferencia}
+		\label{fig:ltspice-vco-closed-diff.png}
+	\end{figure}
+	
+	Y simulando queda lo siguiente:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff-wf.png}
+		\caption[Forma de onda de la simulación del sistema con primera diferencia]{Forma de onda de la simulación del sistema con primera diferencia}
+		\label{fig:ltspice-vco-closed-diff-wf.png}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff-wf-zoom.png}
+		\caption[Detalle de la forma de onda \ref{fig:ltspice-vco-closed-diff-wf.png}]{Detalle de la forma de onda \ref{fig:ltspice-vco-closed-diff-wf.png}}
+		\label{fig:ltspice-vco-closed-diff-wf-zoom.png}
+	\end{figure}
+
+	Se puede apreciar que ya tenemos una señal perfectamente cuadrada y %TODO: qué forma tiene esto? amplitud (1, -1), por qué? qué clase de circuito toma esta señal?
+	
+	Haciendo la FFT de la onda anterior:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff-wf-fft.PNG}
+		\caption[FFT de la forma de onda \ref{fig:ltspice-vco-closed-diff-wf.png}]{FFT de la forma de onda \ref{fig:ltspice-vco-closed-diff-wf-fft.PNG}}
+		\label{fig:ltspice-vco-closed-diff-wf-fft.PNG}
+	\end{figure}
+	
+	Con respecto a la FFT de la figura \ref{fig:ltspice-vco-closed-wf-fft.png}, el armónico principal se acerca a los 0dB aún más, además de que se reduce mucho el segundo armónico. El umbral de ruido aumenta hasta los -60dB %TODO: por qué? no debería bajar?
+	
+	Con todo este circuito, ya hemos conseguido el objetivo principal de conseguir un modulador funcional basado en VCO con el menor número posible de componentes.
+	
 	
 \chapter{Conclusiones (?)}
 \chapter{Entorno socioeconómico (?)}
