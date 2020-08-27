@@ -278,7 +278,7 @@ hmargin=3cm
 \setcounter{page}{3}
 	
 	% ESCRIBIR EL RESUMEN AQUÍ
-	En este trabajo se desarrolla un estudio cuyo objetivo es el diseño de una nueva arquitectura de convertidor analógico digital por oscilador controlado por tensión que reduzca el ruido y el consumo en comparación con las arquitecturas habituales.
+	En este trabajo se desarrolla un estudio cuyo objetivo es encontrar una manera de linealizar el comportamiento de una nueva arquitectura de ADC basado en VCO, sin necesidad del uso de amplificador operacional, como se ha hecho hasta ahora.
 	
 	\textbf{Palabras clave: ADC-VCO, Oscilador en anillo, Conversión Analógico-Digital, CMOS}
 	% Escribir las palabras clave aquí
@@ -361,17 +361,23 @@ hmargin=3cm
 
 \chapter{Introducción}
 
-	Los convertidores ADC\footnote{Analog to Digital Converter. En español, Convertidor Analógico a Digital} son onmipresentes en nuestro día a día. Sin ellos, no sería posible realizar una llamada con un teléfono móvil, o disfrutar de un sistema de climatización en nuestro hogar, o utilizar el control de crucero en nuestro coche. El objetivo de estos importantes bloques de la electrónica es convertir señales físicas, como ondas electromagnéticas, temperatura ambiente, o la posición de un eje, en señales digitales interpretables por un sistema basado en la electrónica digital. Una vez tenemos estas señales, normalmente compuestas por un flujo de bits, pueden ser procesadas por un microcontrolador para después tomar las decisiones necesarias para conseguir el objetivo deseado, como activar el compresor del aire acondicionado si la temperatura sube de cierto límite preestablecido.
+	Los ADC\footnote{Analog to Digital Converter. En español, Convertidor Analógico a Digital} son onmipresentes en nuestro día a día. Sin ellos, no sería posible realizar una llamada con un teléfono móvil, o disfrutar de un sistema de climatización en nuestro hogar, o utilizar el control de crucero en nuestro coche. El objetivo de estos importantes bloques de la electrónica es convertir señales físicas, como ondas electromagnéticas, temperatura ambiente, o la posición de un eje, en señales digitales interpretables por un sistema basado en la electrónica digital. Una vez tenemos estas señales, normalmente compuestas por un flujo de bits, pueden ser procesadas por un microcontrolador para después tomar las decisiones necesarias para conseguir el objetivo deseado, como activar el compresor del aire acondicionado si la temperatura sube de cierto límite preestablecido.
 	
-	Cada día que pasa aumenta la demanda de aparatos más rápidos, compactos, y eficientes. Por regla general, la miniaturización de la electrónica tiene un impacto positivo en estos criterios. Los transistores son los componentes fundamentales de los circuitos integrados, donde recae el grueso de consumo y tamaño en un sistema electrónico. Estos transistores aumentan su eficiencia energética según disminuye su tamaño, además de permitir mayores frecuencias de operación. Por esto, existe un gran incentivo en la búsqueda de arquitecturas y técnicas de fabricación que permitan transistores más pequeños.
+	Cada día que pasa aumenta la demanda de aparatos más rápidos, compactos, y eficientes. Por regla general, la miniaturización de la electrónica tiene un impacto positivo en estos criterios. Los transistores son los componentes fundamentales de los circuitos integrados. Estos transistores aumentan su eficiencia energética según disminuye su tamaño, además de permitir mayores frecuencias de operación. Por esto, existe un gran incentivo en la búsqueda de arquitecturas y técnicas de fabricación que permitan transistores más pequeños.
 	
 	La ley de Moore ayuda a poner un poco de contexto histórico a esta carrera por la disminución de los transistores. Gordon Moore anunció en 1965 una tendencia en la, por aquel entonces emergente, industria de la electrónica: cada dos años se duplicaba la cantidad de componentes presente en un circuito integrado en la misma superficie \cite{moorelaw}. A más componentes, mayor poder de procesamiento, pero también mayor coste de fabricación por la complejidad y delicadeza requerida en los procesos.
 	
 	\section{Motivación del trabajo}
 	
-	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes, reducción del tamaño de los transistores), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta, los más comunes en aplicaciones de alta velocidad, requieren de un integrador, normalmente implementado como un amplificador operacional. Estos integradores trabajan en el ámbito analógico. Con las tecnologías de fabricación actuales, se consiguen transistores de tamaños diminutos, con buen tiempo de respuesta y bajo consumo en aplicaciones digitales, pero efectos adversos en aplicaciones analógicas. Algunos de estos efectos son la degradación de la señal por efectos cuánticos y defectos en la fabricación (el tamaño nominal de un transistor CMOS de tecnología puntera es entre un cuarto y una décima parte la longitud de onda de la luz ultravioleta usada en litografía), altas corrientes parásitas por el bajo tamaño de la puerta del transistor, y limitaciones en la simulación de sistemas por la alta densidad y complejidad en los microchips actuales.
+	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes, reducción del tamaño de los transistores), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta, los más comunes en aplicaciones de bajo ancho de banda y alta resolución (audio, sensores biométricos y de alta precisión), requieren de un integrador. Estos integradores normalmente trabajan en el ámbito analógico, y la gran mayoría usan un amplificador operacional, con gran número de componentes y alto consumo.
 	
-	Los ADC basados en VCO actuales, o bien necesitan un integrador analógico de manera similar a los sigma-delta, o bien necesitan una compensación de linealidad mediante circuitería digital, que termina ocupando la mayor parte de la superficie del chip. Este trabajo se centra en la búsqueda de una nueva arquitectura usando un VCO tanto como integrador como cuantificador, que permita ahorrar la necesidad de circuitos de compensación y circuitos analógicos complejos, manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
+	Con las tecnologías de fabricación actuales, se consiguen transistores de tamaños diminutos, con buen tiempo de respuesta y bajo consumo en aplicaciones digitales, pero efectos adversos en aplicaciones analógicas.
+	%TODO: ERIC: pon algún ejemplo numérico
+	Algunos de estos efectos son la degradación de la señal por efectos cuánticos y defectos en la fabricación (el tamaño nominal de un transistor CMOS de tecnología puntera es entre un cuarto y una décima parte la longitud de onda de la luz ultravioleta usada en litografía), altas corrientes parásitas por el bajo tamaño de la puerta del transistor, y limitaciones en la simulación de sistemas por la alta densidad y complejidad en los microchips actuales. Otro efecto negativo que tiene la miniaturización en el diseño de microcircuitos es la falta de escalabilidad de la tensión de corte de los MOSFET. Mientras que la tensión de alimentación baja con el tamaño, la de corte no lo hace en la misma medida, haciendo más difícil el diseño de estructuras de alta ganancia, como los amplificadores operacionales, que requieren de suficiente diferencia entre ambas tensiones. %TODO: preguntar a Eric. es por los amplificadores en cascada?
+	
+	Además, a pesar de que el consumo individual de los transistores disminuye al reducirse su tamaño, lo hace de manera lineal, mientras que su incremento en número por unidad de superficie crece de manera cuadrática. Esto provoca un gran problema en cuanto a disipación térmica, por eso aumentar el número de componentes en circuitos integrados no es una solución en ciertos casos en que no pueda gestionarse correctamente el calor generado, como en sistemas embebidos y aplicaciones de muy bajo consumo, como dispositivos del IoT\footnote{Internet of Things. En español: Internet de las Cosas}.
+	
+	Los ADC basados en VCO actuales necesitan una compensación de linealidad mediante circuitería digital, que termina ocupando la mayor parte de la superficie del chip. Este trabajo se centra en la búsqueda de una nueva arquitectura usando un VCO tanto como integrador como cuantificador, que permita ahorrar la necesidad de circuitos de compensación y circuitos analógicos complejos (amplificadores operacionales), manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
 	
 	\section{Objetivos}
 	
@@ -379,7 +385,7 @@ hmargin=3cm
 	%TODO: consultar Eric
 
 	\section{Marco regulador}
-	%TODO preguntar a Eric
+	%TODO: ERIC: Apenas se podría decir algo, pero debes decirlo. Puedes hablar de las aplicaciones del sistema, por ejemplo para un micrófono y de ahí enlazar con la ley de privacidad por grabar con el micrófono la voz de la gente. Llévalo a la aplicación concreta y ahí habla de leyes de privacidad, almacenamiento de datos...
 	
 	
 	\section{Esquema de este documento}
@@ -403,7 +409,7 @@ hmargin=3cm
 
 	\footnotetext{Fuente: \url{http://ece-research.unm.edu/jimp/vlsi/slides/chap2_1.html} }
 	
-	Un transistor MOSFET es un tipo de transistor bipolar que se usa para amplificar y conmutar señales eléctricas dentro de un circuito. Se compone de cuatro entradas: fuente, puerta, drenador, y sustrato, que normalmente está conectado a la fuente. Cuando se aplica un voltaje en la puerta, se crea un canal en el medio semiconductor que permite el paso de corriente entre la fuente y el drenador. Podemos distinguir dos tipos de transistores MOS: los canal-n y los canal-p, dependiendo del dopaje del silicio usado en su fabricación. Los canal-n tienen un dopaje negativo en el silicio de la fuente y el drenador, que se consigue añadiendo impurezas de un elemento como fósforo, dejando electrones libres que actúan como portadores de carga. En el caso de los canal-p, se dopan con elementos como boro, que dejan huecos (ausencia de electrones en capas de valencia), y estos actúan como portadores de carga.
+	Un transistor MOSFET es un tipo de transistor que se usa para amplificar y conmutar señales eléctricas dentro de un circuito. Se compone de cuatro entradas: fuente, puerta, drenador, y sustrato, que normalmente está conectado a la fuente para evitar la modulación de la tensión de corte. Cuando se aplica un voltaje en la puerta, se crea un canal en el medio semiconductor que permite el paso de corriente entre la fuente y el drenador. Podemos distinguir dos tipos de transistores MOS: los canal-n y los canal-p, dependiendo del dopaje del silicio usado en su fabricación. Los canal-n tienen un dopaje negativo en el silicio de la fuente y el drenador, que se consigue añadiendo impurezas de un elemento como fósforo, dejando electrones libres que actúan como portadores de carga. En el caso de los canal-p, se dopan con elementos como boro, que dejan huecos (ausencia de electrones en capas de valencia), y estos actúan como portadores de carga.
 	
 	Estos son los símbolos más usados para representar transistores MOS:
 	
@@ -413,7 +419,7 @@ hmargin=3cm
 		\label{fig:p-mos-symbol.png}
 	\end{figure}
 
-	\footnotetext{Fuente: Analog Integrated Circuit Design\cite{aicd}}
+	\footnotetext{Fuente: \cite{aicd}}
 	
 	\begin{figure}[H]
 		\includegraphics[width=0.8\textwidth]{n-mos-symbol.png}
@@ -422,11 +428,13 @@ hmargin=3cm
 	\end{figure}
 	
 	
-	\footnotetext{Fuente: Analog Integrated Circuit Design\cite{aicd}}
+	\footnotetext{Fuente: \cite{aicd}}
 	
 	\section{Tecnología CMOS}
 	
-	La tecnología de fabricación CMOS\footnote{Complementary MOS} utiliza una combinación de transistores MOS de canal n y canal p para implementar las funciones de un microprocesador. Por ejemplo, un inversor (puerta lógica NOT) se consigue con la siguiente disposición:
+	La tecnología de fabricación CMOS\footnote{Complementary MOS} utiliza una combinación de transistores MOS de canal n y canal p para implementar las operaciones lógicas. Fue desarrollada en la década de 1960 por empleados de la compañía Fairchild Semiconductor\cite{cmos-fairchild}.
+	
+	Por ejemplo, un inversor (puerta lógica NOT) se consigue con la siguiente disposición:
 	
 	\begin{figure}[H]
 		\includegraphics[width=0.75\textwidth]{inverter_mos.jpg}
@@ -436,11 +444,11 @@ hmargin=3cm
 	\footnotetext{Fuente: \url{https://www.oreilly.com/library/view/introduction-to-digital/9780470900550/chap5-sec008.html} }
 	
 	
-	Los circuitos CMOS tienen un bajo consumo, tienen una buena resistencia al ruido, y son relativamente fáciles de diseñar. Es por esto que se ha convertido en la tecnología dominante en los microcircuitos.
+	Los circuitos CMOS tienen un bajo consumo estático, ya que una vez formado el canal en región activa, la alta impedancia de entrada provoca un paso de corriente casi nulo, únicamente provocado por corrientes parásitas. También tienen una buena tolerancia al ruido por su propiedad regenerativa de la señal: si entra una señal degradada a una puerta CMOS, esta volverá al valor lógico que corresponda, dentro de las tolerancias que permita el circuito. Por estas propiedades es por las que la tecnología CMOS se ha convertido en dominante en el diseño de microcircuitos en la actualidad.
 	
 	\section{Conversión analógico-digital}
 	
-	La tarea de un convertidor analógico-digital, o ADC, es convertir una señal de espectro continuo en el tiempo en una señal de valores discretos cuantizable.
+	La tarea de un convertidor analógico-digital, o ADC, es tomar una señal eléctrica analógica y transformarla en una digital. Una señal analógica es aquella producida por un fenómeno electromanético y representable por una función continua que define su periodo y amplitud. Una señal digital es una sucesión de diferentes valores discretos con un espaciado temporal uniforme.
 	
 	\begin{figure}[H]
 		\includegraphics[width=0.75\textwidth]{analog-vs-digital-signal.jpg}
@@ -454,32 +462,41 @@ hmargin=3cm
 	Estos son algunos de los parámetros básicos que describen el comportamiento y prestaciones de un ADC:
 	
 	\begin{description}[font=\bfseries, style=multiline, align=left, before={\renewcommand\makelabel[1]{\bfseries ##1:}}]
-		\item[Frecuencia de muestreo] Frecuencia a la cual se toman medidas de la señal original. Determina el ancho de banda.
-		\item[Ancho de banda] Rango de frecuencias de la señal original que puede ser correctamente muestreada, cuantizada, y posteriormente recreada.
+		\item[Frecuencia de muestreo] Frecuencia a la cual se toman medidas de la señal original. Determinado por el ancho de banda de la aplicación.
+		\item[Ancho de banda] Rango de frecuencias de la señal original que puede ser correctamente muestreada, cuantizada, y posteriormente recreada. 
 		\item[Resolución] Número de pasos máximo entre rango de valores de la señal analógica. Determina el error de cuantificación y el SNR máximo.
-		\item[SNR] Signal to Noise Ratio. Relaciona la potencia de la señal de interés y el ruido de fondo existente.
+		\item[SNR] La Signal-to-Noise Ratio, o Relación Señal-Ruido, es la relación entre la potencia de la señal transmitida y la potencia del ruido presente en dicha señal. Normalmente se representa en dB. 
+			\begin{figure}[H]
+				\begin{equation}
+					\label{snr}
+					SNR = \frac{P_{signal}}{P_{noise}}
+				\end{equation}
+			\end{figure}
+			\begin{figure}[H]
+				\begin{equation}
+					\label{snr-db}
+					SNR_{dB} = 10 log_{10} (\frac{P_{signal}}{P_{noise}})
+				\end{equation}
+			\end{figure}
+					
 	\end{description}
 
 	En cuanto a errores en la conversión, estas son las principales fuentes:
 	
 	\begin{description}[font=\bfseries, style=multiline, align=left, before={\renewcommand\makelabel[1]{\bfseries ##1:}}]
-		\item[Cuantificación] Para una muestra dada en un momento determinado, diferencia entre el valor de la señal original y valor de la señal cuantificada. Surge porque para cada valor discreto de la señal cuantificada, existe un rango con infinitos valores intermedios en la señal original.
+		\item[Cuantificación] Para una muestra dada en un momento determinado, es la diferencia entre el valor de la señal original y valor de la señal cuantificada.
 		\item[Linealidad] Falta de correlación lineal entre entrada y salida del ADC. Necesita ser corregida para evitar divergencias entre entrada y salida que distorsionan la lectura.
-		\item[Offset] Para valores muy bajos de señal original, la lectura puede ser distorsionada si no se corrige el offset.
-		\item[Ganancia] Si no se ajusta correctamente, se puede inducir en un error creciente a medida que se recorre la curva de respuesta.
 	\end{description}
 
 	Es importante diferenciar dos tipos de ADC según su frecuencia de muestreo:
 	\begin{description}[font=\bfseries, style=multiline, align=left, before={\renewcommand\makelabel[1]{\bfseries ##1:}}]
-		\item[A frecuencia de Nyquist] La frecuencia de muestreo es igual a dos veces la frecuencia máxima de la señal a capturar\cite{nyquist}\cite{shannon-nyquist}.
+		\item[A frecuencia de Nyquist] La frecuencia de muestreo es igual a dos veces la frecuencia máxima de la señal a capturar\cite{nyquist}\cite{shannon-nyquist}. El teorema de Nyquist habla de esta frecuencia como la mínima a la que es matemáticamente posible recrear una señal perfectamente a partir de las muestras tomadas.
 		\item[Sobremuestreados] La frecuencia de muestreo es superior a la frecuencia de Nyquist; habitualmente unas diez veces mayor.
 	\end{description}
 	
-	La mayoría de arquitecturas de ADC actuales trabajan con sobremuestreo, ya que permiten una mejor gestión del ruido.
-	
 	\section{Arquitecturas de ADC actuales}
 	
-	Existen multitud de arquitecturas ADC: flash, aproximaciones sucesivas, de integración, de rampa, de seguimiento, tensión-frecuencia, y un largo etcétera.
+	Existen multitud de arquitecturas ADC, entre ellas: flash, aproximaciones sucesivas, de integración, de rampa, de seguimiento, tensión-frecuencia. Algunos ejemplos:
 	
 	\begin{figure}[H]
 		\includegraphics[width=0.5\textwidth]{flash-adc.png}
@@ -498,7 +515,9 @@ hmargin=3cm
 	
 	\section{Modulación sigma-delta en ADCs}
 	
-	Un ADC que utiliza el principio de modulación sigma-delta, también llamado \textit{modulador sigma-delta}, o \textit{modulador \sigmadelta}, tiene como bloques principales un sumador, un integrador, y un cuantificador, además de un bucle de retroalimentación. Este es el esquema de bloques básico de un modulador \sigmadelta:
+	Un ADC que utiliza el principio de modulación sigma-delta, también llamado \textit{modulador sigma-delta}, o \textit{modulador \sigmadelta}, tiene como bloques principales un sumador
+	%TODO: digo sumador, pero se ve claramente que suma la señal negada. no sé si está claro. lo he visto normalmente escrito como sumador, aunque reste
+	, un integrador, y un cuantificador, además de un bucle de retroalimentación. Este es el esquema de bloques básico de un modulador \sigmadelta:
 	
 	\begin{figure}[H]
 		\includegraphics[width=0.6\textwidth]{sigma-delta-blocks.png}
@@ -507,7 +526,7 @@ hmargin=3cm
 	\end{figure}
 	\footnotetext{Fuente: Oversampled Analog-To-Digital Converter Architectures Based On Pulse Frequency Modulation\cite{eric-thesis} }
 	
-	El funcionamiento de este tipo de ADC sigue los pasos siguientes. La señal original \begin{math}( x(t) )\end{math} es sumada a la salida del cuantificador \begin{math}( y(t) )\end{math} en magnitud negativa. La salida \begin{math}( y(t) )\end{math} es un flujo de un bit de profundidad, por lo que debe ser transformada a magnitud real a través de un DAC. El integrador forma un filtro de paso bajo sobre la diferencia entre señal original y cuantificada de tal manera que se consigue una realimentación de baja frecuencia, consiguiendo una reducción del ruido de cuantificación en la banda de respuesta.
+	El funcionamiento de este tipo de ADC sigue los pasos siguientes. La señal original $( x(t) )$ es sumada a la salida del cuantificador $( y(t) )$ en magnitud negativa. La salida $( y(t) )$ es un flujo de un bit de profundidad, por lo que debe ser transformada a magnitud real a través de un DAC. El integrador forma un filtro de paso bajo sobre la diferencia entre señal original y cuantificada de tal manera que se consigue una realimentación de baja frecuencia, consiguiendo una reducción del ruido de cuantificación en la banda de respuesta.
 	
 	Este es un ejemplo gráfico del resultado de la modulación \sigmadelta:
 	
@@ -631,7 +650,7 @@ hmargin=3cm
 	\begin{figure}[h]
 		\begin{equation}
 		\label{vco-laplace}
-		\frac{K_{VCO}}{s}
+		\frac{2 \pi K_{VCO}}{s}
 		\end{equation}
 		\footnotemark
 	\end{figure}
@@ -727,6 +746,7 @@ hmargin=3cm
 	\end{figure}
 	
 	Donde $Y(s)$ es la señal de salida, $X(s)$ es la señal de entrada, $K_{VCO}$ es la ganancia del VCO, $\beta$ es la ganancia del lazo de realimentación, y $Q(s)$ es el ruido de cuantificación modelado como una señal aditiva tras el VCO.
+	%TODO: comentario Eric: explica qué significa la ecuación, lo de Q es la NTF y lo de X es la STF
 	
 	Respecto a los términos a la derecha de la ecuación superior, podemos deducir el siguiente comportamiento del sistema en función de la frecuencia:
 	
@@ -960,7 +980,7 @@ plot(Tperiods(:,2), freqs_ordered)
 	Este es el resultado del análisis con el dataset de la simulación \ref{fig:clk-freq-sim-waveform.PNG}:
 	
 	\begin{figure}[H]
-		\includegraphics[width=0.8\textwidth]{ml-clk-freq-curve.png}
+		\centerline{\includegraphics[width=1.1\textwidth]{ml-clk-freq-curve.png}}
 		\caption[Curva frecuencia-tiempo del reloj de frecuencia variable]{Curva frecuencia-tiempo del reloj de frecuencia variable}
 		\label{fig:ml-clk-freq-curve.png}
 	\end{figure}
