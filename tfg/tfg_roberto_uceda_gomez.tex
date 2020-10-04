@@ -517,7 +517,7 @@ hmargin=3cm
 	
 	Un ADC que utiliza el principio de modulación sigma-delta, también llamado \textit{modulador sigma-delta}, o \textit{modulador \sigmadelta}, tiene como bloques principales un sumador
 	%TODO: digo sumador, pero se ve claramente que suma la señal negada. no sé si está claro. lo he visto normalmente escrito como sumador, aunque reste
-	, un integrador, y un cuantificador, además de un bucle de retroalimentación. Este es el esquema de bloques básico de un modulador \sigmadelta:
+	, un integrador, y un cuantificador, además de un bucle de realimentación. Este es el esquema de bloques básico de un modulador \sigmadelta:
 	
 	\begin{figure}[H]
 		\includegraphics[width=0.6\textwidth]{sigma-delta-blocks.png}
@@ -567,16 +567,19 @@ hmargin=3cm
 	
 	\section{Idea inicial}
 	
-	La idea fundamental de la nueva arquitectura es sustituir el integrador y el cuantificador de un ADC de tipo \sigmadelta por un VCO. Esto eliminaría la necesidad de un amplificador operacional presente en un \sigmadelta, rebajando por tanto el número de componentes necesarios y el consumo total del sistema.
-	%TODO: preguntar a Eric la fuente original de la idea
+	La idea fundamental de esta nueva arquitectura es, partiendo de un sistema de ADC por VCO en bucle abierto, estudiar la viabilidad de linealizar la respuesta mediante un bucle de realimentación, haciendo uso de la ganancia intrínseca de la dispone el propio oscilador. Esto eliminaría la necesidad de un amplificador operacional presente en las arquitecturas de VCO con realimentación existentes hoy en día, rebajando por tanto el número de componentes necesarios y el consumo total del sistema.
+	
+	La idea principal de esta arquitectura viene de publicaciones que ya hacen uso de un bucle de realimentación con DAC de 1 bit controlado por frecuencia. En esta publicación: \textit{VCO-ADC linearization by switched capacitorfrequency-to-current conversion}\cite{vco-adc-ruben-eric} ya se destacan los beneficios de un ADC por VCO con realimentación, como son una mayor resistencia al ruido por jitter del reloj, mayor resistencia al ruido térmico de los componentes pasivos, y una mejora importante de la relación señal-ruido con respecto a un ADC VCO en bucle abierto. El problema de la arquitectura propuesta en la publicación es que no consigue prescindir de un amplificador operacional, que sigue siendo el componente más complejo, costoso, y con gran consumo.
+	
+	En este estudio, exploraremos la posibilidad de usar la ganancia intrínseca del VCO para poder eliminar el amplificador operacional, para reducir el consumo y el tamaño del ADC, y abrir su uso a nuevas aplicaciones que requiran de una gran miniaturización y eficiencia.
 	
 	El primer paso para desarrollar el estudio es comprender cómo funciona un VCO.
 	
 	\section{VCO en anillo}
 	
-	Un VCO, siglas de \textit{Voltage Controlled Oscillator} es un componente electrónico que emite un flujo de pulsos cuya frecuencia es proporcional a un voltaje de entrada.
+	Un VCO, siglas de \textit{Voltage Controlled Oscillator} es un componente electrónico que emite un tren de pulsos cuya frecuencia es proporcional a un voltaje de entrada.
 	
-	Un VCO en anillo es un tipo de oscilador controlado por voltaje. En su forma más básica, consiste en un número impar de puertas inversoras colocadas en un bucle cerrado. En las entradas de alimentación de las puertas se conecta la señal a modular. La señal ya modulada aparece entre la salida y la entrada de cualquier par de puertas.
+	Un VCO en anillo es un tipo de oscilador controlado por voltaje. En su forma más básica, consiste en un número impar de puertas inversoras colocadas en un bucle cerrado. En las entradas de alimentación de las puertas se conecta la señal a modular. Este señal de entrada puede ser en voltaje o, a través de un transconductor, en corriente. La señal ya modulada aparece entre la salida y la entrada de cualquier par de puertas.
 	
 	Esta es la representación simbólica de una puerta inversora, con sus conexiones nombradas:
 	\begin{figure}[H]
@@ -608,10 +611,9 @@ hmargin=3cm
 		\label{fig:vco-sch.png}
 	\end{figure}
 
-	El número impar de puertas inversoras provoca un estado de inestabilidad en el oscilador. Dado que hay una pequeña demora en la activación de las puertas por %TODO: por qué hay demora en activación?
-	, y por la realimentación positiva en el anillo, se crean señales alternativas entre un 1 lógico y un 0 lógico. La frecuencia a la que estas señales cambian es proporcional al voltaje aplicado en la alimentación de las puertas (VCC en la figuras \ref{fig:inverter-symbol.png} y \ref{fig:inverter-sch.png}). La frecuencia de oscilación sigue la siguiente fórmula:
+	El número impar de puertas inversoras provoca un estado de inestabilidad en el oscilador. Hay una pequeña demora en la activación de las puertas por efecto de las corrientes parásitas, que retrasan el cambio de voltaje, y por tanto el cambio de región de operación del transistor. La realimentación positiva en el anillo hace que se creen señales alternativas entre un 1 lógico y un 0 lógico entre la entrada y la salida de cada puerta. La frecuencia a la que estas señales cambian es proporcional al voltaje aplicado en la alimentación de las puertas (VCC en la figuras \ref{fig:inverter-symbol.png} y \ref{fig:inverter-sch.png}). La frecuencia de oscilación sigue la siguiente fórmula:
 	
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\begin{equation}
 		\label{vco-freq-sw-t}
 		f = \frac{1}{2 n \tau}
@@ -620,10 +622,10 @@ hmargin=3cm
 	\end{figure}
 	\footnotetext{Fuente: \cite{eric-thesis}}
 	
-	Donde $n$ es el número de puertas en el anillo y $\tau$ es el tiempo de activación de la puerta.
+	Donde $n$ es el número de puertas en el anillo y $\tau$ es el retraso de activación de la puerta, que es inversamente proporcional a la señal de entrada. Por ello, $f$ depende la señal de entrada.
 	
 	Asumiendo un comportamiento ideal del VCO, podemos expresar la relación entre entrada y salida como:
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\begin{equation}
 		\label{vco-freq-ideal}
 		f_{VCO}= f_{0} + K_{VCO} * V_{i}
@@ -636,10 +638,10 @@ hmargin=3cm
 	
 	Viendo el oscilador como un integrador, y tomando la fase de la señal como salida, en vez de la frecuencia, hacemos el siguiente análisis:
 	
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\begin{equation}
 		\label{vco-phase}
-		\theta(t) = 2\pi\int_{0}{t}f_{VCO}(\tau)d\tau = 2\pi f_{0}t + 2\pi K_{VCO}\int_{0}{t}x(\tau)d\tau
+		\theta(t) = 2\pi\int_{0}^{t}f_{VCO}(\tau)d\tau = 2\pi f_{0}t + 2\pi K_{VCO}\int_{0}^{t}x(\tau)d\tau
 		\end{equation}
 		\footnotemark
 	\end{figure}
@@ -647,7 +649,7 @@ hmargin=3cm
 	
 	Haciendo un análisis en frecuencia, la transformada de laplace del oscilador resulta así:
 	
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\begin{equation}
 		\label{vco-laplace}
 		\frac{2 \pi K_{VCO}}{s}
@@ -657,7 +659,7 @@ hmargin=3cm
 	\footnotetext{Fuente: \cite{eric-thesis}}
 	
 
-	Como se puede observar, la señal que entra al oscilador es analógica, mientras que la que sale ya es digital. Con pocos componentes, se consigue un integrador y cuantificador que funciona principalmente en el ámbito digital, evitando las restricciones que supone el procesado de una señal analógica, como se comentó en la introducción. De aquí surge el interés de los osciladores en anillo en su uso en ADCs.
+	Como se puede observar, la señal que entra al oscilador es analógica, mientras que la que sale ya es digital, aunque debe ser demodulada más tarde. Con pocos componentes, se consigue un integrador y cuantificador que funciona principalmente en el ámbito digital, evitando las restricciones que supone el procesado de una señal analógica, como se comentó en la introducción. De aquí surge el interés de los osciladores en anillo en su uso en ADCs.
 	
 	\section{Osciladores en anillo en ADCs}
 	
@@ -708,11 +710,11 @@ hmargin=3cm
 	Las soluciones más comunes a este problema son:
 	
 	\begin{itemize}
-		\item Calibración Digital: Se hace un análisis de la curva de respuesta, se crea una tabla de mapeo entrada-salida, y por se hace la corrección por interpolación en un circuito digital. Aumenta mucho el número de componentes y el consumo.
+		\item Calibración Digital: Se hace un análisis de la curva de respuesta, se crea una tabla de mapeo entrada-salida, y por se hace la corrección por interpolación en un circuito digital. Aumenta mucho el área ocupada y el consumo.
 		
-		\item Modulación previa al VCO: Se coloca un modulador, habitualmente de tipo PWM, para limitar la frecuencia de oscilación de la señal que entra en el VCO. Es una solución más, sencilla, pero limita el ancho de banda para frecuencias de señal muy altas.
+		\item Modulación previa al VCO: Se coloca un modulador, habitualmente de tipo PWM, para limitar la frecuencia de oscilación de la señal que entra en el VCO. Es una solución más sencilla, pero el modulador PWM consume mucho y puede presentar no linealidad, así que el problema se mueve de componente, pero no se elimina de todo el sistema.
 		
-		\item Reducción de la señal de entrada: Si se consigue lo suficiente, se reduce el impacto de la amplitud de la señal en la linealidad del sistema. Algunas maneras usadas para esto son la inclusión de un ADC más básico antes del VCO, cuya señal se resta a la entrada. Así se consigue disminuir la frecuencia de la señal que entra al VCO. Este método necesita de más componentes que trabajan con señales analógicas, con el consecuente aumento en consumo y espacio ocupado.
+		\item Reducción de la señal de entrada: Si se consigue lo suficiente, se reduce el impacto de la amplitud de la señal en la linealidad del sistema. Algunas maneras usadas para esto son la inclusión de un ADC más básico antes del VCO, cuya señal se resta a la entrada. Así se consigue disminuir la amplitud de la señal que entra al VCO. Este método necesita de un ADC extra, con el consecuente aumento en consumo y espacio ocupado.
 		
 		\item Ajuste por circuito: Ajustando individualmente la alimentación de las puertas con componentes pasivos se puede paliar la no linealidad, pero esta técnica pierde fiabilidad una vez se toman en cuenta los errores de fabricación, la temperatura, y pequeñas variaciones en voltaje de alimentación.
 	\end{itemize}
@@ -721,7 +723,7 @@ hmargin=3cm
 	
 	\section{Análisis matemático del VCO con realimentación negativa}
 	
-	Una manera común de linealizar un sistema es con un bucle de retroalimentación negativa. Partiendo de un ADC con VCO en bucle abierto, la manera más sencilla de incluir retroalimentación es unir la salida con la entrada a través de un sumador. En el bucle debe existir una conversión de la salida digital del VCO a la entrada analógica del sistema.
+	Una manera común de linealizar un sistema es con un bucle de realimentación negativa. Partiendo de un ADC con VCO en bucle abierto, la manera más sencilla de incluir realimentación es unir la salida con la entrada a través de un sumador. En el bucle debe existir una conversión de la salida digital del VCO a la entrada analógica del sistema.
 
 	\begin{figure}[H]
 		\includegraphics[width=0.5\textwidth]{vco-diagram-closed-loop.png}
@@ -772,13 +774,14 @@ hmargin=3cm
 		\end{equation}
 	\end{figure}
 
-	Así, tenemos que a altas frecuencias, el coeficiente de $Q(s)$ aumenta y el de $X(s)$ disminuye. A bajas frecuencias, ocurre lo contrario. Por lo tanto, este sistema aplica un filtro paso alto a $Q(s)$ y un filtro paso bajo a $X(s)$. Esto discrimina el ruido de cuantificación en la banda de frecuencias de la señal de entrada, si se ajustan correctamente las constantes $\beta$ y $K_{VCO}$. Para aumentar la SNR\footnote{Signal to Noise Ratio: ratio entre la señal y el ruido} necesitamos que estos valores sean grandes %TODO: explicar mejor por qué
+	Así, tenemos que a altas frecuencias, el coeficiente de $Q(s)$ aumenta y el de $X(s)$ disminuye. A bajas frecuencias, ocurre lo contrario. Por lo tanto, este sistema aplica un filtro paso alto a $Q(s)$ y un filtro paso bajo a $X(s)$. Esto discrimina el ruido de cuantificación en la banda de frecuencias de la señal de entrada. Para aumentar la SNR\footnote{Signal to Noise Ratio: ratio entre la señal y el ruido} necesitamos que estos valores sean grandes %TODO: explicar mejor por qué
 	
+	En cuanto a la linealidad del sistema: partimos de un DAC que recoge la frecuencia de salida del VCO y la convierte en corriente. Asumimos que esta conversión es lineal. Esta corriente se resta a la entrada. Integrando esta diferencia (a través del VCO), tiende a cero. Cuando la resta es cero, las señales de entrada y del bucle son iguales, y si la corriente que sale del DAC es lineal con respecto a la frecuencia es lineal, con lo que la corriente de entrada del sistema también es lineal.  Así que consiguiendo un DAC que realice la conversión con un buen nivel de linealidad dentro del ancho de banda de interés, resolvemos el problema de la linealidad en el VCO.
 	
 	\subsection{Lazo de realimentación por capacidades conmutadas}
 	
-	Dado que la ganancia del VCO es relativamente estable y más compleja de manipular, en este estudio nos centramos en la ganancia en el lazo de realimentación. En el lazo es necesario hacer una conversión de la señal modulada digital, a la señal de entrada analógica. Para esto es necesario buscar un DAC relativamente sencillo para no volver a encontrarnos el problema que intentamos evitar: número de componentes y consumo. Además, los requisitos para el DAC no son especialmente restrictivos. Ya que el sistema en lazo cerrado tiende a estabilizarse por sí mismo, una conversión tosca % TODO: no me gusta esta palabra
-	y poco precisa es suficiente.
+	Dado que la ganancia del VCO es relativamente estable y más compleja de manipular, en este estudio nos centramos en la ganancia en el lazo de realimentación. En el lazo es necesario hacer una conversión de la señal modulada digital, a la señal de entrada analógica. Para esto es necesario buscar un DAC relativamente sencillo para no volver a encontrarnos el problema que intentamos evitar: número de componentes y consumo. Además, los requisitos para el DAC no son especialmente restrictivos, salvo que la transformación sea lineal.
+	
 	
 	La solución escogida es el uso de un sistema de capacidades conmutadas. En nuestra implementación, este se compone de dos transistores pareados CMOS, en una distribución casi idéntica a las puertas lógicas inversoras.
 	
@@ -788,7 +791,7 @@ hmargin=3cm
 		\label{fig:sw-capacities-sch.png}
 	\end{figure}
 	
-	El circuito consta de dos transistores CMOS, canal-n y canal-p, y un condensador conectado entre fuente y drenador de los transistores. La fuente de alimentación $V4$ se conecta a la fuente del transistor canal-p, y la señal modulada en PFM\footnote{Pulse Frequency Modulation, modulación en frecuencia de pulsos.} se conecta a las puertas de ambos transistores. La señal PFM actúa a modo de reloj para controlar la activación de los transistores, que actúan a modo de interruptores.
+	El circuito consta de dos transistores CMOS, canal-n y canal-p, y un condensador conectado entre fuente y drenador de los transistores. La fuente de alimentación $V4$ se conecta a la fuente del transistor canal-p, y la señal modulada en FM\footnote{Frequency Modulation, modulación en frecuencia.} se conecta a las puertas de ambos transistores. La señal PFM actúa a modo de reloj para controlar la activación de los transistores, que actúan a modo de interruptores.
 	
 	Este es el diagrama simbólico del sistema:
 	
@@ -842,7 +845,7 @@ hmargin=3cm
 		\end{equation}
 	\end{figure}
 	
-	Así obtenemos una resistencia variable en función de la frecuencia de entrada.
+	Así obtenemos una resistencia variable proporcional a la frecuencia de entrada, con la que podemos obtener la corriente proporcional a la frecuencia del VCO para nuestro bucle de realimentación.
 	
 	Debemos tener en cuenta que los transistores tienen unas ciertas corrientes parasíticas fuera de su modelo ideal. Estas corrientes provocan que un transistor abierto tenga una impedancia muy alta, pero no cero, y uno cerrado tenga una impedancia muy baja, pero nunca nula. Relacionando este paso de corriente por los transistores con un voltaje de referencia, podemos modelar los efectos parasíticos como una impedancia intrínseca en los transistores.
 	
@@ -1049,7 +1052,7 @@ plot(Tperiods(:,2), freqs_ordered)
 	
 	\begin{figure}[H]
 		\includegraphics[width=\textwidth]{ltspice-vco-open-wf-fft.png}
-		\caption[FFT de la señal modulada del VCO abierto]{FFT\footnote{Fast Fourier Transform, o transformada rápida de Fourier} de la señal modulada del VCO abierto}
+		\caption[FFT de la señal demodulada del VCO abierto]{FFT\footnote{Fast Fourier Transform, o transformada rápida de Fourier} de la señal demodulada del VCO abierto}
 		\label{fig:ltspice-vco-open-wf-fft.png}
 	\end{figure}
 
@@ -1058,7 +1061,7 @@ plot(Tperiods(:,2), freqs_ordered)
 	
 	\subsection{Modelo sencillo de ADC VCO, con bucle cerrado}
 	
-	Visto el comportamiento de un VCO en bucle abierto, es el turno de probar cómo se comporta con un bucle de retroalimentación. Dado que el DAC no invierte la señal de entrada, debemos buscar una solución para hacer negativo el bucle de realimentación. La manera más directa de hacer esto es replicar el circuito con un segundo ADC cuya entrada sea la inversa de la señal original. Así queda el circuito:
+	Visto el comportamiento de un VCO en bucle abierto, es el turno de probar cómo se comporta con un bucle de realimentación. Dado que el DAC no invierte la señal de entrada, debemos buscar una solución para hacer negativo el bucle de realimentación. La manera más directa de hacer esto es replicar el circuito con un segundo ADC cuya entrada sea la inversa de la señal original. Así queda el circuito:
 	
 	\begin{figure}[H]
 		\includegraphics[width=\textwidth]{ltspice-vco-closed-sch.png}
@@ -1066,7 +1069,7 @@ plot(Tperiods(:,2), freqs_ordered)
 		\label{fig:ltspice-vco-closed-sch.png}
 	\end{figure}
 
-	El generador de señal \textbf{V1}, a la izquierda, proporciona una señal sinusoidal de 250kHz, con un offset (\textbf{V3}) de 0.85V. El componente \textbf{E4} invierte la señal sinusoidal para pasarla al segundo VCO. A continuación, hay un consensador para desacoplar la parte continua de la entrada del resto del circuito. Lo siguiente es un divisor de tensión para sumar la realimentación a la entrada. Más tarde está el espejo de corriente, explicado en el modelo anterior, y después el VCO. De una de las fases del VCO se toma una señal que va al DAC opuesto. Como las señales de entrada de cada uno están desfasadas 180º, cruzando las entradas de los DACs se consigue que los lazos de retroalimentación sean negativos. La alimentación del sistema, tanto DAC como espejo de corriente, viene de la fuente \textbf{V2}, de 1.8V.
+	El generador de señal \textbf{V1}, a la izquierda, proporciona una señal sinusoidal de 250kHz, con un offset (\textbf{V3}) de 0.85V. El componente \textbf{E4} invierte la señal sinusoidal para pasarla al segundo VCO. A continuación, hay un consensador para desacoplar la parte continua de la entrada del resto del circuito. Lo siguiente es un divisor de tensión para sumar la realimentación a la entrada. Más tarde está el espejo de corriente, explicado en el modelo anterior, y después el VCO. De una de las fases del VCO se toma una señal que va al DAC opuesto. Como las señales de entrada de cada uno están desfasadas 180º, cruzando las entradas de los DACs se consigue que los lazos de realimentación sean negativos. La alimentación del sistema, tanto DAC como espejo de corriente, viene de la fuente \textbf{V2}, de 1.8V.
 	
 	Este es el resultado de la simulación:
 	
