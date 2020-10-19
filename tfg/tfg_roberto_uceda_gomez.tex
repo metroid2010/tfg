@@ -760,6 +760,7 @@ hmargin=3cm
 	Haciendo un análisis del sistema, podemos despejar la función de transferencia del sistema:
 	
 	\begin{figure}[H]
+		\caption{Desarrollo de la función de transferencia del VCO con lazo cerrado}
 		\label{vco-closed-loop-s}
 		\begin{equation}
 		\begin{array}{lcl}
@@ -847,6 +848,7 @@ hmargin=3cm
 	Las siguientes ecuaciones describen la corriente de salida en función de la frecuencia.
 	
 	\begin{figure}[H]
+		\caption{Ecuaciones de corriente de salida en función de la frecuencia para el el DAC por capacidades conmutadas}
 		\label{sw-capacities-eqs}
 		\begin{equation}
 		\begin{array}{c}
@@ -1085,123 +1087,150 @@ end
 	Partiendo del modelo \ref{fig:vco-adc-open-loop.png}, montamos el esquemático en LTSpice.
 	
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-open.png}
+		\includegraphics[width=\textwidth]{vco-open-first-diff-sch.png}
 		\caption[Esquemático del ADC por VCO, abierto]{Esquemático del ADC por VCO, abierto}
-		\label{fig:ltspice-vco-open.png}
+		\label{fig:vco-open-first-diff-sch.png}
 	\end{figure}
 	
-	A la izquierda tenemos un generador de señal sinusoidal de 250kHz con offset de 0.85V y amplitud 0.5V. Así se emula las características de las posibles señales a capturar en las aplicaciones a las que va destinado el sistema. En la parte superior, tenemos un espejo de corriente CMOS, que sirve para acoplar la señal alterna a la entrada del VCO, actuando como buffer para evitar interacciones entre ambos bloques del sistema.
-	En el centro está el VCO sencillo de cinco puertas, llamadas fases en el caso de un VCO. %TODO: de verdad se llaman fases???
+	A la izquierda tenemos un generador de señal sinusoidal de 250kHz con offset de 0.85V y amplitud 0.5V. Así se emula las características de las posibles señales a capturar en las aplicaciones a las que va destinado el sistema. En la parte superior, tenemos un espejo de corriente CMOS, que sirve para acoplar la señal de entrada a la entrada del VCO, actuando como buffer para evitar interacciones entre ambos bloques del sistema.
+	En el centro está el VCO sencillo de cinco puertas, llamadas fases en el caso de un VCO. 
+	
+	
+	Para demodular la señal del VCO (modulada en frecuencia), usamos un circuito de primera diferencia (en la parte inferior del esquemático, tomando la señal entre dos puertas cualquiera del VCO). Esta primera diferencia evalúa la diferencia entre dos señales de salida: una directa (primer flip-flop), y una retrasada un ciclo de reloj (segundo flip-flop). Ambas señales pasan por una puerta XOR para terminar de demodularse. El flujo de pulsos de 1 bit presente en la salida (output) equivale a los flancos de la señal del VCO, muestreados a la frecuencia del reloj conectado a los flip-flops. Así es como se demodula la señal que sale del VCO.
+	
+	%TODO: explicar esto mejor? añadir referencias?
 	
 	Este es el resultado de la simulación:
 	
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-open-wf.png}
-		\caption[Forma de onda de la simulación del VCO abierto]{Forma de onda de la simulación del VCO abierto}
-		\label{fig:ltspice-vco-open-wf.png}
+		\includegraphics[width=\textwidth]{vco-open-first-diff-waveform.png}
+		\caption[Detalle de la forma de onda de la simulación del VCO abierto]{Detalle de la forma de onda de la simulación del VCO abierto}
+		\label{fig:vco-open-first-diff-waveform.png}
 	\end{figure}
 
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-open-wf-zoom.png}
-		\caption[Forma de onda de la simulación del VCO abierto, detalle]{Forma de onda de la simulación del VCO abierto, detalle}
-		\label{fig:ltspice-vco-open-wf-zoom.png}
-	\end{figure}
+	Nótese que se ha escogido un rango cualquiera del total de la simulación, para poder apreciar mejor la forma de onda.
+	
+	Como se puede observar, la forma de onda en \ref{fig:vco-open-first-diff-waveform.png} es perfectamente cuadrada, ya que se ha sometido a la demodulación por la primera diferencia.
+	
+	Para analizar el comportamiento del sistema, usaremos la transformada rápida de Fourier. Compararemos el espectro de la señal original con el de la señal de salida ya demodulada.
 	
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-open-wf-fft.png}
-		\caption[FFT de la señal modulada del VCO abierto]{FFT\footnote{Fast Fourier Transform, o transformada rápida de Fourier} de la señal modulada del VCO abierto}
-		\label{fig:ltspice-vco-open-wf-fft.png}
-	\end{figure}
-
-	Como se puede observar, la forma de onda en \ref{fig:ltspice-vco-open-wf.png} no es perfectamente cuadrada, aunque \ref{fig:ltspice-vco-open-wf-fft.png} demuestra que sí está modulada, porque el primer harmónico coincide con la frecuencia de la señal original, así como el segundo y tercero con sus múltiplos. El umbral de ruido es alto para frecuencias altas, pero limitando el ancho de banda esto no supone un problema. En los siguientes apartados trataremos de aumentar la ganancia del primer harmónico, disminuyendo la de los demás harmónicos y el umbral de ruido.
-	
-	%TODO: no está demodulada!!!
-	
-	\subsection{Modelo sencillo de ADC VCO, con bucle cerrado}
-	
-	Visto el comportamiento de un VCO en bucle abierto, es el turno de probar cómo se comporta con un bucle de realimentación. Dado que el DAC no invierte la señal de entrada, debemos buscar una solución para hacer negativo el bucle de realimentación. La manera más directa de hacer esto es replicar el circuito con un segundo ADC cuya entrada sea la inversa de la señal original. Así queda el circuito:
-	
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-closed-sch.png}
-		\caption[Esquemático del VCO doble con DACs cruzados]{Esquemático del VCO doble con DACs cruzados}
-		\label{fig:ltspice-vco-closed-sch.png}
+		\includegraphics[width=\textwidth]{vco-open-first-diff-fft-2.png}
+		\caption[FFT de la señal demodulada del VCO abierto]{FFT\footnote{Fast Fourier Transform, o transformada rápida de Fourier} de la señal demodulada del VCO abierto}
+		\label{fig:vco-open-first-diff-fft-2.png}
 	\end{figure}
 
-	El generador de señal \textbf{V1}, a la izquierda, proporciona una señal sinusoidal de 250kHz, con un offset (\textbf{V3}) de 0.85V. El componente \textbf{E4} invierte la señal sinusoidal para pasarla al segundo VCO. A continuación, hay un consensador para desacoplar la parte continua de la entrada del resto del circuito. Lo siguiente es un divisor de tensión para sumar la realimentación a la entrada. Más tarde está el espejo de corriente, explicado en el modelo anterior, y después el VCO. De una de las fases del VCO se toma una señal que va al DAC opuesto. Como las señales de entrada de cada uno están desfasadas 180º, cruzando las entradas de los DACs se consigue que los lazos de realimentación sean negativos. La alimentación del sistema, tanto DAC como espejo de corriente, viene de la fuente \textbf{V2}, de 1.8V.
+	Para mejorar la visualización, se ha optado por un fondo blanco, con trazos de color rojo para la señal original y color azul para la señal de salida demodulada.
 	
-	Este es el resultado de la simulación:
+	En la FFT \ref{fig:vco-open-first-diff-fft-2.png} se puede ver que la señal original ha sido correctamente modulada y demodulada, porque el primer harmónico coincide con la frecuencia de la señal original, así como el segundo y tercero con sus múltiplos. El umbral de ruido es alto para frecuencias altas, pero limitando el ancho de banda esto no supone un problema. En los siguientes apartados trataremos de aumentar la ganancia del primer harmónico, disminuyendo la de los demás harmónicos y el umbral de ruido.
 	
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-closed-wf.png}
-		\caption[Forma de onda de la simulación del VCO con lazo de realimentación cruzado]{Forma de onda de la simulación del VCO con lazo de realimentación cruzado}
-		\label{fig:ltspice-vco-closed-wf.png}
-	\end{figure}
+	\subsection{Modelo de ADC por VCO con bucle cerrado}\label{ss:vco-open}
 	
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-closed-wf-zoom.png}
-		\caption[Detalle de la forma de onda \ref{fig:ltspice-vco-closed-wf.png}]{Detalle de la forma de onda \ref{fig:ltspice-vco-closed-wf.png}}
-		\label{fig:ltspice-vco-closed-wf-zoom.png}
-	\end{figure}
-	
-	La forma de onda no es perfectamente cuadrada, pero rectificaremos eso en las siguientes simulaciones con algunos componentes más. El resultado de la modulación de la señal se puede ver en la transformada rápida de Fourier:
-	
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-closed-wf-fft.png}
-		\caption[FFT de la forma de onda \ref{fig:ltspice-vco-closed-wf.png}]{FFT de la forma de onda \ref{fig:ltspice-vco-closed-wf.png}}
-		\label{fig:ltspice-vco-closed-wf-fft.png}
-	\end{figure}
-	
-	El primer armónico es pronunciado, y coincide con la frecuencia de la señal de entrada, así que la modulación es correcta. El resto de armónicos no son tan pronunciados como en el sistema de bucle abierto (figura \ref{fig:ltspice-vco-open-wf-fft.png}). Se ha conseguido una mejora en ruido armónico dentro del ancho de banda, pero el umbral de ruido aumenta. El siguiente paso es colocar un circuito de primera diferencia %TODO: se llama así? qué hace???
-	
-	\subsection{Modelo de VCO con primera diferencia}
-	
-	%TODO: explicar aquí lo de la primera diferencia
-	
-	Este es el módulo de primera diferencia:
-	
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff-module.PNG}
-		\caption[Esquemático del módulo de primera diferencia]{Esquemático del módulo de primera diferencia}
-		\label{fig:ltspice-vco-closed-diff-module.PNG}
-	\end{figure}
-	
-	Las señales de fase de ambos VCO entran al módulo por la pata \textbf{D} de cada flip-flop a la izquierda. La salida del primer flip-flop entra al segundo inmediatamente. La salida de el primero y el segundo entra en la puerta XOR (\textbf{A3} y \textbf{A6}). A su vez, la salida de ambas puertas se suma por medio de los componentes \textbf{E2} y \textbf{E1}, invirtiendo una de ellas para compensar el desfase que introdujimos en la señal original (ver apartado anterior). %TODO: qué más digo de esto?
-	
-	Añadiendo el módulo, queda el siguiente circuito completo:
+	Visto el comportamiento de un VCO en bucle abierto, es el turno de probar cómo se comporta con un bucle de realimentación. Dado que el DAC no invierte la señal de entrada, debemos buscar una solución para hacer negativo el bucle de realimentación. La solución que hemos escogido para llevar esto a cabo es utilizar una estructura pseudodiferencial. Esto quiere decir que replicamos el circuito de VCO, lazo, y primera diferencia. Invertimos la señal de entrada en una de las ramas, para que ambos VCO trabajen con señales opuestas, y cruzamos los lazos de realimentación. Así conseguimos que que los lazos de realimentación actúen negativamente sobre sus respectivas entradas. % TODO: actúen negativamente???
 	
 	\begin{figure}[H]
 		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff.png}
 		\caption[Esquemático del VCO con circuito de primera diferencia]{Esquemático del VCO con circuito de primera diferencia}
 		\label{fig:ltspice-vco-closed-diff.png}
 	\end{figure}
+
+	% TODO: explicar todos los bloques!!!
 	
-	Y simulando queda lo siguiente:
+	A continuación, se hará un análisis de cada bloque del circuito.
 	
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff-wf.png}
-		\caption[Forma de onda de la simulación del sistema con primera diferencia]{Forma de onda de la simulación del sistema con primera diferencia}
-		\label{fig:ltspice-vco-closed-diff-wf.png}
-	\end{figure}
+	Señal:
 	
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff-wf-zoom.png}
-		\caption[Detalle de la forma de onda \ref{fig:ltspice-vco-closed-diff-wf.png}]{Detalle de la forma de onda \ref{fig:ltspice-vco-closed-diff-wf.png}}
-		\label{fig:ltspice-vco-closed-diff-wf-zoom.png}
+		\includegraphics[width=0.6\textwidth]{ltspice-vco-closed-signal-block.png}
+		\caption[Bloque de la señal del circuito de VCO con lazo cerrado]{Bloque de la señal del circuito de VCO con lazo cerrado}
+		\label{fig:ltspice-vco-closed-signal-block.png}
 	\end{figure}
 
-	Se puede apreciar que ya tenemos una señal perfectamente cuadrada y %TODO: qué forma tiene esto? amplitud (1, -1), por qué? qué clase de circuito toma esta señal?
+	La señal de entrada del circuito es una señal sinusoidal de 250kHz de frecuencia y amplitud 0.8V con un offset de 0.85V. El offset está presente para evitar que aparezca voltaje negativo en el circuito, que entorpecería el funcionamiento del VCO y del resto de bloques del sistema. Para lograr la estructura pseudodiferencial, usamos un inversor de voltaje ($E4$) sobre la fuente de alterna $V1$. Cada una de las dos ramas superiores abastecerá a cada uno de los dos VCO.
 	
-	Haciendo la FFT de la onda anterior:
+	Realimentación y negador:
 	
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff-wf-fft.PNG}
-		\caption[FFT de la forma de onda \ref{fig:ltspice-vco-closed-diff-wf.png}]{FFT de la forma de onda \ref{fig:ltspice-vco-closed-diff-wf-fft.PNG}}
-		\label{fig:ltspice-vco-closed-diff-wf-fft.PNG}
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-loop-1.png}
+		\caption[Bloque del lazo de realimentación y del negador del circuito de VCO con lazo cerrado]{Bloque del lazo de realimentación y del negador del circuito de VCO con lazo cerrado}
+		\label{fig:ltspice-vco-closed-loop-1.png}
+	\end{figure}
+
+	El bloque anterior conecta con la rama inferior izquierda de este bloque. El condensador aparece para desacoplar la entrada del resto del circuito, y evitar interacciones no deseadas entre los componentes. Las resistencias forman un divisor de voltaje que compone el negador, aunque en principio se trate de un sumador entre la señal de entrada y la del lazo de realimentación de la rama opuesta de la estructura pseudodiferencial. El DAC por capacidades conmutadas aparece en la parte superior izquierda. La señal del DAC entra por su parte izquierda, y viene del VCO opuesto. La alimentación del DAC viene en su parte superior, de valor 1.8V, conectando con la fuente del transistor canal-p. El condensador entre los drenadores de los transistores es el encargado de lograr el efecto de la capacidad conmutada. La salida de este bloque al siguiente aparece en la esquina superior derecha, inmediatamente después del transistor de 1K.
+	
+	Entrada al VCO:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-current-mirror-block.png}
+		\caption[Bloque de la entrada al VCO del circuito de VCO con lazo cerrado]{Bloque de la entrada al VCO del circuito de VCO con lazo cerrado}
+		\label{fig:ltspice-vco-closed-current-mirror-block.png}
+	\end{figure}
+
+	Como buffer antes de la entrada al VCO, escogemos un espejo de corriente formado por dos transitores canal-p. Su función es replicar la corriente de entrada, en la esquina inferior izquierda, por la salida, en la esquina inferior derecha. La alimentación del espejo de corriente viene del rail superior, a un voltaje de alimentación común al sistema, igual al del DAC del bloque anterior, de 1.8V. Este buffer consigue separar la sección de entrada, compuesta por el bloque del negador y DAC de realimentación, del VCO. Así se evitan interacciones no deseadas entre componentes. %TODO: algo más???
+
+	VCO:
+		
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-vco-block.png}
+		\caption[Bloque del VCO del circuito de VCO con lazo cerrado]{Bloque del VCO del circuito de VCO con lazo cerrado}
+		\label{fig:ltspice-vco-closed-vco-block.png}
+	\end{figure}
+
+	Conectando con el espejo de corriente, tenemos el VCO. Este bloque ya se ha explicado en apartados anteriores. Tomamos el mismo número de fases que en el modelo de lazo abierto, es decir, cinco fases. La salida de este bloque está en su lado izquierdo, tomando la señal entre dos fases cualesquiera del VCO. Esta salida conecta con el circuito de primera diferencia, además de con el DAC del lazo de realimentación de la rama opuesta del sistema pseudodiferencial.
+
+	Primera diferencia:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff-module.PNG}
+		\caption[Bloque de la primera diferencia y salida del circuito de VCO con lazo cerrado]{Bloque de la primera diferencia y salida del circuito de VCO con lazo cerrado}
+		\label{fig:ltspice-vco-closed-diff-module.PNG}
+	\end{figure}
+
+	Como en la sección anterior, \ref{ss:vco-open}, usamos un circuito de primera diferencia para demodular la señal del VCO. Como se observa en la imagen, y comparado con el circuito usado en el sistema con lazo abierto, \ref{fig:vco-open-first-diff-sch.png}, esta vez se duplican el número de componentes. Cada una de las ramas, conectada al pin $D$ de los flip-flops situados a la izquierda, necesita su propio demodulador, con su propio reloj. Como las ramas tienen como entradas señales de igual magnitud pero opuestas, los relojes también deben estar invertidos. El cambio más significativo con respecto al circuito \ref{fig:vco-open-first-diff-sch.png} es la inclusión de dos seguidores de tensión, $E1$ y $E2$, que se encargan de sumar las ramas, previa inversión de una de ellas, para compensar el desfase de la señal original. El resultado de todo el sistema aparece en la señal de salida $Y$, en la esquina superior izquierda. Es en este pin $Y$ donde mediremos los resultados en los siguientes apartados.
+	
+	Nótese también que en \ref{fig:ltspice-vco-closed-diff-module.PNG} aparece también la alimentación general del sistema, $V_{dd}$, que abaste al espejo de corriente y al DAC.
+	
+	
+	Una vez explicados todos los elementos del sistema, procedemos a simular con los parámetros de entrada explicados en su correspondiente bloque.
+	
+	Este es el resultado de la simulación:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{sim-vco-closed-waveform-dem.png}
+		\caption[Forma de onda de la simulación del VCO con lazo de realimentación cruzado]{Forma de onda de la simulación del VCO con lazo de realimentación cruzado}
+		\label{fig:sim-vco-closed-waveform-dem.png}
+	\end{figure}
+
+	En azul, tenemos la señal sinusoidal de entrada del sistema. En verde, la salida $Y$ final demodulada.
+	
+	Para apreciar mejor el detalle de la onda, ampliamos en una sección cualquiera.
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{sim-vco-closed-waveform-dem-zoom.png}
+		\caption[Detalle de la forma de onda \ref{fig:sim-vco-closed-waveform-dem.png}]{Detalle de la forma de onda \ref{fig:sim-vco-closed-waveform-dem.png}}
+		\label{fig:sim-vco-closed-waveform-dem-zoom.png}
+	\end{figure}
+
+	Nótese que la señal de salida $Y$ se ha cambiado a color rojo para crear más contraste con el fondo y facilitar su lectura. La señal sinusoidal de entrada mantiene su color azul.
+
+	 %TODO: comentario de esto. por qué queremos que haya dos señales inversas desfasadas 180 grados, una de ellas entre -1 y 0???
+	
+	El resultado de la modulación y demodulación de la señal se puede ver en la transformada rápida de Fourier:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{sim-vco-closed-waveform-dem-fft.png}
+		\caption[FFT de la forma de onda \ref{fig:sim-vco-closed-waveform-dem.png}]{FFT de la forma de onda \ref{fig:sim-vco-closed-waveform-dem.png}}
+		\label{fig:sim-vco-closed-waveform-dem-fft.png}
 	\end{figure}
 	
-	Con respecto a la FFT de la figura \ref{fig:ltspice-vco-open-wf-fft.png}, el armónico principal se acerca a los 0dB aún más, además de que se reduce mucho el segundo armónico. El umbral de ruido aumenta hasta los -60dB %TODO: por qué? no debería bajar?
+	En rojo, tenemos la señal final demodulada $Y$. En azul, tenemos la señal original que entra al sistema. Como se puede observar, hasta el harmónico principal la diferencia entre la señal original y la digitalizada es mínima. A partir de este primer pico, aparecen harmónicos secundarios, y apartir de 1MGHz, aparece una fuerte distorsión. Esta distorsión es fruto de todo el proceso de cuantificación. Corresponde al término $Q(s)$ %TODO: y $D(s)$ también???
+	en las ecuaciones \ref{vco-closed-loop-s}.
 	
-	Con todo este circuito, ya hemos conseguido el objetivo principal de conseguir un modulador funcional basado en VCO con el menor número posible de componentes.
+	Comparando con la figura \ref{fig:vco-open-first-diff-fft-2.png}, la ganancia del harmónico principal es unos 10dB mayor, acercándose a la señal original. Disminuyen notablemente los harmónicos secundarios también. El umbral de ruido se mantiene a unos niveles similares.
+	
+	Teniendo en cuenta que el sistema con bucle cerrado funciona correctamente, y que sus prestaciones son superiores con respecto al sistema con bucle abierto, solo queda probar la linealidad de la respuesta del sistema con respecto a la entrada.
+	
+	\section{Estudio de la linealidad del ADC por VCO con lazo cerrado}
 	
 	
 	
