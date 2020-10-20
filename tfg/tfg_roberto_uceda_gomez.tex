@@ -738,7 +738,7 @@ hmargin=3cm
 	
 	En este capítulo se expone el análisis de una nueva arquitectura de ADC que emplea un VCO como cuantificador e integrador, usando un lazo de realimentación negativo para linealizar la respuesta del VCO.
 	
-	\section{Idea inicial}
+	\section{Idea inicial}\label{sc:initial-idea}
 	
 	La idea fundamental de esta nueva arquitectura es, partiendo de un sistema de ADC por VCO en bucle abierto, estudiar la viabilidad de linealizar la respuesta mediante un bucle de realimentación, haciendo uso de la ganancia intrínseca de la dispone el propio oscilador. Esto eliminaría la necesidad de un amplificador operacional presente en las arquitecturas de VCO con realimentación existentes hoy en día, rebajando por tanto el número de componentes necesarios y el consumo total del sistema.
 	
@@ -1232,7 +1232,17 @@ end
 	
 	\section{Estudio de la linealidad del ADC por VCO con lazo cerrado}
 	
+	\section{Soluciones alternativas}
 	
+	Como se comentó en el apartado \ref{sc:initial-idea}, en este estudio tratamos de prescindir de componentes complejos y costosos, en espacio y en consumo, como el amplificador operacional, aprovechando la ganancia intrínseca del VCO y del lazo de realimentación. Aunque la arquitectura propuesta en el apartado \ref{ss:vco-open} funciona correctamente y supone una importante mejora sobre el modelo de lazo abierto, el error de linealidad no llega a corregirse completamente. En este último apartado exploramos una alternativa plausible que aprovecha gran parte de la arquitectura propuesta, añadiendo ganancia extra en el lazo de realimentación. Esta ganancia, según las ecuaciones \ref{vco-closed-loop-s}, hará que disminuya la magnitud del error de linealidad y de cuantificación. Probando que este parámetro es decisivo en las prestaciones de la arquitectura, queda como trabajo futuro explorar opciones alternativas al amplificador operacional, como arquitecturas de VCO diferentes (más fases, ) %TODO: terminar de redactar esto: fases y vcos en paralelo? esto tiene un nombre; también buscar un convertidor de frecuencia a corriente que aporte más ganancia
+	
+	Incluimos el amplificador operacional en configuración no inversora (para mantener la estructura pseudodiferencial) en el bloque de realimentación, inmediatamente después del circuito de capacidad conmutada:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{vco-closed-opamp-block.png}
+		\caption[Bloque de alimentación modificado con amplificador operacional]{Bloque de alimentación modificado con amplificador operacional}
+		\label{fig:vco-closed-opamp-block.png}
+	\end{figure}
 	
 \chapter{Conclusiones (?)}
 \chapter{Entorno socioeconómico (?)}
