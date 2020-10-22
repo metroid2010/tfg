@@ -93,7 +93,7 @@ hmargin=3cm
 {\contentsmargin{0pt}                          
 	\thecontentslabel.\enspace}
 {\contentsmargin{0pt}}                        
-{\titlerule*[.7pc]{.}\contentspage}  
+{\titlerule*[.7pc]{.}\contentspage}
 
 
 % DISEÑO DE TABLAS. Puedes elegir entre el estilo para ingeniería o para ciencias sociales y humanidades. Por defecto, está activado el estilo de ingeniería. Si deseas utilizar el otro, comenta las líneas del diseño de ingeniería y descomenta las del diseño de ciencias sociales y humanidades
@@ -254,7 +254,7 @@ hmargin=3cm
 		\begin{Large}
 			Tutor:
 			Eric Gutiérrez Fernández \\
-			Leganés, %TODO: fecha \\
+			Leganés, a 23 de octubre de 2020
 		\end{Large}
 	\end{center}
 	\vfill
@@ -278,17 +278,38 @@ hmargin=3cm
 \setcounter{page}{3}
 	
 	% ESCRIBIR EL RESUMEN AQUÍ
-	En este trabajo se desarrolla un estudio cuyo objetivo es encontrar una manera de linealizar el comportamiento de una nueva arquitectura de ADC basado en VCO, sin necesidad del uso de amplificador operacional, como se ha hecho hasta ahora.
+	En este trabajo se desarrolla un estudio cuyo objetivo es encontrar una manera de linealizar el comportamiento de una nueva arquitectura de ADC basado en VCO en anillo, sin necesidad del uso de amplificador operacional, como se ha hecho hasta ahora. La solución propuesta es el uso un lazo de realimentación negativa, con un DAC de un bit basado en capacidades conmutadas, y una estructura pseudodiferencial, con un demodulador de primera diferencia. Tras el estudio matemático del sistema, se realizarán diferentes simulaciones, comparando las prestaciones de esta arquitectura realimentada respecto a la arquitectura en lazo abierto. Vista una clara mejora, pero aún lejos de ser esta solución perfecta, se discutirán soluciones alternativas y futuras vías por las continuar desarrollando este estudio. En último lugar, se presentará un prototipo funcional construido sobre placa de prototipado.
 	
-	\textbf{Palabras clave: ADC-VCO, Oscilador en anillo, Conversión Analógico-Digital, CMOS}
+	
+	\textbf{Palabras clave: Microelectrónica, ADC-VCO, Oscilador en anillo, Conversión Analógico-Digital, CMOS}
 	% Escribir las palabras clave aquí
 	
-	%TODO
 	\vfill
 \end{abstract}
 	\newpage % página en blanco o de cortesía
 	\thispagestyle{empty}
 	\mbox{}
+
+%----------
+%	resumen, pero en english
+%----------	
+\renewcommand\abstractname{\large\bfseries\filcenter\uppercase{Abstract}}
+\begin{abstract}
+	\thispagestyle{plain}
+	\setcounter{page}{3}
+	
+	
+	This document has the main objective of presenting and developing a way to linealize a new architecture of ring oscillator-based, VCO ADC, without the need of an operational amplifier, as was common until now. The proposed solution employs a feedback loop, with a one-bit DAC based on switched capacities, and a pseudodifferential structure, with a first difference demodulator. After a mathematical analysis of the system, simulations will be done, comparing the performance of this solution as compared to the open loop architecture. Seeing a clear improvement, but still far from getting perfect results, there will be a discussion of alternate solutions and future ways of continuing this study. Ultimately, a functional, breadboard-based prototype will be displayed, with its corresponding tests.
+	
+	
+	\textbf{Keywords: Microelectronics, ADC-VCO, Ring Oscillator, Analog to Digital Conversion, CMOS}
+	% Escribir las palabras clave aquí
+	
+	\vfill
+\end{abstract}
+\newpage % página en blanco o de cortesía
+\thispagestyle{empty}
+\mbox{}
 
 
 %----------
@@ -298,8 +319,13 @@ hmargin=3cm
 
 \setcounter{page}{5}
 	
-	%TODO
-		
+	\begin{center}
+		\textit{A Rubén, Jose, Celia.}
+	\end{center}
+
+	\begin{center}
+		\textit{A Guillermo, Nuria, Juan, Sergio, Paula, Bruno, Ana, Pedro, María. A todos.}
+	\end{center}
 	\vfill
 	
 	\newpage % página en blanco o de cortesía
@@ -345,6 +371,7 @@ hmargin=3cm
 			ADC & Analog to Digital Converter, Convertidor Analógico-Digital \\
 			CMOS & Complimentary Metal-Oxide Semiconductor \\
 			MOSFET & Metal Oxide Semiconductor Field Effect Transistor, también llamados transistores MOS \\
+			VCO & Voltage Controlled Oscillator, Oscilador controlado por voltaje \\
 		\end{tabular}
 	\end{center}
 \end{table}
@@ -372,7 +399,6 @@ hmargin=3cm
 	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes, reducción del tamaño de los transistores), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta, los más comunes en aplicaciones de bajo ancho de banda y alta resolución (audio, sensores biométricos y de alta precisión), requieren de un integrador. Estos integradores normalmente trabajan en el ámbito analógico, y la gran mayoría usan un amplificador operacional, con gran número de componentes y alto consumo.
 	
 	Con las tecnologías de fabricación actuales, se consiguen transistores de tamaños diminutos, con buen tiempo de respuesta y bajo consumo en aplicaciones digitales, pero efectos adversos en aplicaciones analógicas.
-	%TODO: ERIC: pon algún ejemplo numérico
 	Algunos de estos efectos son la degradación de la señal por efectos cuánticos y defectos en la fabricación (el tamaño nominal de un transistor CMOS de tecnología puntera es entre un cuarto y una décima parte la longitud de onda de la luz ultravioleta usada en litografía), altas corrientes parásitas por el bajo tamaño de la puerta del transistor, y limitaciones en la simulación de sistemas por la alta densidad y complejidad en los microchips actuales. Otro efecto negativo que tiene la miniaturización en el diseño de microcircuitos es la falta de escalabilidad de la tensión de corte de los MOSFET. Mientras que la tensión de alimentación baja con el tamaño, la de corte no lo hace en la misma medida, haciendo más difícil el diseño de estructuras de alta ganancia, como los amplificadores operacionales, que requieren de suficiente diferencia entre ambas tensiones.
 	
 	Además, a pesar de que el consumo individual de los transistores disminuye al reducirse su tamaño, lo hace de manera lineal, mientras que su incremento en número por unidad de superficie crece de manera cuadrática. Esto provoca un gran problema en cuanto a disipación térmica, por eso aumentar el número de componentes en circuitos integrados no es una solución en ciertos casos en que no pueda gestionarse correctamente el calor generado, como en sistemas embebidos y aplicaciones de muy bajo consumo, como dispositivos del IoT\footnote{Internet of Things. En español: Internet de las Cosas}.
@@ -381,19 +407,48 @@ hmargin=3cm
 	
 	\section{Objetivos}
 	
-	El grueso de este trabajo se encuentra en el plano teórico. El primer paso es realizar un estudio de las arquitecturas de ADC ya existentes, centrándose en aquellas que emplean VCOs. A partir de este estudio, se estudiará la viabilidad de varias ideas de diferentes publicaciones que aún no han sido implementadas. Para esto, se utilizarán herramientas de simulación basadas en SPICE. Una vez probada la efectividad de la arquitectura, la siguiente tarea será montar un circuito con componentes discretos sobre protoboard, medir los parámetros de funcionamiento, y así dejar demostrada la factibilidad de la arquitectura.
-	%TODO: consultar Eric
+	El grueso de este trabajo se encuentra en el plano teórico. El primer paso es realizar un estudio de las arquitecturas de ADC ya existentes, centrándose en aquellas que emplean VCOs en anillo. A partir de este estudio, se estudiará la viabilidad de varias ideas de diferentes publicaciones que aún no han sido implementadas. Para esto, se utilizarán herramientas de simulación basadas en SPICE. Una vez probada la efectividad de la arquitectura, la siguiente tarea será montar un circuito con componentes discretos sobre protoboard, medir los parámetros de funcionamiento, y así dejar demostrada la factibilidad de la arquitectura. También quedarán claros los pasos siguientes de cara a continuar esta investigación, con el objetivo final de ofrecer una solución ventajosa y económicamente viable que pueda ser integrada en dispositivos en el mercado.
+	
+	\section{Impacto}\label{st:impact}
+	
+	%Impacto socio-económico (impacto económico, social, medioambiental, ético, etc.) esperado de la aplicación del resultado del proyecto, plan de explotación del mismo, o consideraciones sobre aspectos económicos de la temática del trabajo. Para trabajos teóricos se debe detallar en qué aplicaciones prácticas podría utilizarse y qué impacto socio-económico podría generar en el sector de aplicación.
+	
+	Medir el impacto social y económico de un trabajo de naturaleza tan teórica como el presente no es fácil. El fruto de esta investigación es una mejora, en ocasiones marginal, sobre tecnologías ya existentes. A pesar de ello, estos pequeños avances, vistos desde una perspectiva macroscópica y no granular, permiten el progreso de industrias, mercados, servicios, que hace apenas un siglo serían impensables.
+	
+	Un ejemplo visible del impacto de la miniaturización de componentes como ADCs está en la enorme popularidad de la gozan actualmente los \textit{wearables}, como por ejemplo, los relojes inteligentes. Hace apenas dos décadas, era difícil pensar que un reloj de pulsera tendría la capacidad de avisar a los servicios de emergencia si detectara un paro cardíaco. Hoy en día, tecnologías biomédicas como esta están al alcance del público general. Esto no sería posible sin los avances en eficiencia, miniaturización, precisión, fiabilidad, y coste de dispositivos microelectrónicos. 
+	
+	Desde el punto de vista corporativo, una reducción de costes supone una posibilidad de mejorar el margen de beneficio, o bajar el precio de mercado para aumentar la clientela, y por economías de escala seguir bajando el coste de producción, lo que lleva a más beneficios.
+	
+	Desde un punto de vista social, un menor coste de cara al consumidor permite a un público mayor tener acceso a los servicios que brindan estas nuevas tecnologías. Un ejemplo de beneficio social directo de los \textit{wearables} es la posibilidad de monitorizar constantemente pacientes con cardiopatías o condiciones como la epilepsia. La reducción de costes de estas tecnologías permiten que cualquiera pueda tener acceso a estos aparatos que, en muchas ocasiones, pueden suponer la diferencia entre la vida y la muerte.
 
 	\section{Marco regulador}
-	%TODO: ERIC: Apenas se podría decir algo, pero debes decirlo. Puedes hablar de las aplicaciones del sistema, por ejemplo para un micrófono y de ahí enlazar con la ley de privacidad por grabar con el micrófono la voz de la gente. Llévalo a la aplicación concreta y ahí habla de leyes de privacidad, almacenamiento de datos...
+
+	Este documento trata de una labor de investigación puramente teórica, sin un marco legal directamente aplicable. Partiendo del apartado del impacto (\ref{st:impact}), sí es posible comentar qué repercusiones existen a raíz de las innovaciones que permiten la proliferación de dispositivos del Internet of Things.
 	
+	El Internet of Things propone la adopción de redes de pequeños sistemas de adquisición de datos, conectados entre ellos y a internet. Electrodomésticos, domótica, \textit{wearables}, autómatas industriales, transportes personales y colectivos, infraestructura urbana, incluso aplicaciones militares: el IoT promete conectar todos estos dispositivos individuales para intercambiar información entre ellos. En el caso de la domótica, por ejemplo, una petición a un servicio web del tiempo atmosférico haría posible que las persianas y toldos se recogieran solos en caso de que se acercara una fuerte borrasca, para evitar daños por viento. En cuanto a los automóviles, una conexión entre sus ordenadores de abordo permitiría compartir información del estado del pavimento o de la densidad de tráfico, para que el navegador nos recomendara una ruta más óptima a nuestro destino. La tecnología que hace esto posible se asienta sobre los sistemas embebidos y la microelectrónica: en unos años la arquitectura propuesta en esta memoria podría formar parte de uno de los adaptadores wifi con los que se conecta al router uno de los sensores domóticos, o podría ser parte del sistema de medición del terreno integrado en los amortiguadores del coche.
+	
+	Es innegable el potencial de esta tecnología de ofrecer un servicio práctico y conveniente. Pero la generación y manipulación de cantidades desorbitadas de información supone un riesgo si no se regula. En los últimos años, han salido a la luz numerosos escándalos de violación de privacidad a manos de grandes empresas del sector online. Un ejemplo de esto es el caso de Cambridge Analytica y Facebook, y su papel en la manipulación de cientos de elecciones democráticas en todo el globo. La herramienta que permitió a esta firmar lograr tal hazaña fue la enorme cantidad de datos personales obtenida de Facebook. Queda claro, pues, la importancia de regular tanto la adquisición de datos como su procesamiento, redistribución y protección.
+	
+	En la última década, la Unión Europea ha tomado importantes medidas relacionadas con la privacidad y protección de datos, culminando en la General Data Protection Regulation\footnote{Disponible en \url{http://data.europa.eu/eli/reg/2016/679/oj}} (o GDPR), propuesta en 2016, y en vigor desde 2018. Esta ley europea unifica las leyes relevantes de cada uno de los estados miembros, dando un marco legal al derecho a la privacidad y la intimidad a nivel de toda la Unión. La GDPR impone, entre otros, la necesidad de proteger la información de las personas físicas que acceden al servicio en cuestión, como negocios físicos o páginas web; la obligación de ofrecer herramientas que permitan a los usuarios de los servicios ver, modificar, o eliminar toda la información relacionada con ellos de la que se disponga; o informar a los usuarios de qué usos se da a los datos recopilados, tanto del propio servicio como de terceros con los que se pueda compartir dicha información.
+	
+	La GDPR ha supuesto un importante precedente a nivel mundial en la regulación de la protección de datos. Es de esperar que a lo largo de los próximos años proliferen iniciativas como esta más allá de la Unión Europea. Pero, a pesar de esta actualización de las leyes a los nuevos paradigmas que brinda el ciberespacio, los avances en tecnología, como el IoT, siempre son más rápidos que la publicación de leyes y regulaciones. Para mantener los derechos de los usuarios, y de la población en general, leyes como la GDPR deben estar en constante movimiento, adaptándose a los vertiginosos cambios que se dan en nuestro día a día gracias a los avances tecnológicos.
 	
 	\section{Esquema de este documento}
-	%TODO por decidir
 	
-
+	Este documento sigue los pasos marcados en los objetivos de manera cronológica.
 	
+	En la introducción se expone un contexto general del problema que este trabajo trata de resolver.
 	
+	En el capítulo segundo, \textit{Estado del Arte}, se habla de la base sobre la que se parte en la investigación: tecnologías presentes, alternativas actuales a la solución propuesta, y análisis del elemento fundamental de la arquitectura protagonista: el VCO en anillo.
+	
+	En el capítulo tercero se encuentra el grueso del trabajo realizado, que es la propuesta realizada, su análisis teórico y su análisis práctico, así como problemas encontrados, un extenso comentario de los resultados, y posibles caminos de investigación futura.
+	
+	En el capítulo cuarto, hablamos de un prototipo real construido para probar la arquitectura más allá del plano teórico.
+	
+	En el capítulo quinto se hace un comentario y discusión general de los resultados a modo de conclusión del proyecto.
+	
+	En el sexto y último capítulo se expone el presupuesto estimado a fecha de finalización del proyecto completo.
+		
 
 \chapter{Estado del arte}
 
@@ -439,16 +494,16 @@ hmargin=3cm
 			\hline
 			$< V_{T}$ & Corte \\
 			\hline
-			$> V_{DS} + V_{T}$ & Lineal u óhmica \\
+			$< V_{DS} + V_{T}$ & Lineal u óhmica \\
 			\hline
-			$< V_{DS} + V_{T}$ & Saturación o activa \\
+			$> V_{DS} + V_{T}$ & Saturación \\
 			\hline
 		\end{tabular}
 	\end{table}
 
-	Siendo $V_{T}$ el voltaje límite y $V_{DS}$ el voltaje entre drenador y fuente. El voltaje límite es voltaje mínimo necesario para la aparición de un canal entre la fuente y el drenador. Depende de parámetros de fabricación, como el ancho de la capa de óxido y su material, y de parámetros de funcionamiento, como la temperatura y el voltaje del sustrato (por el llamado \textit{efecto cuerpo}\footnote{El efecto cuerpo relaciona el voltaje de sustrato con el voltaje límite. Un cambio en el voltaje de sustrato conlleva un cambio de similar valor en el voltaje límite.}). %TODO: efecto cuerpo??? comprobar este nombre!
+	Siendo $V_{T}$ el voltaje límite y $V_{DS}$ el voltaje entre drenador y fuente. El voltaje límite es voltaje mínimo necesario para la aparición de un canal entre la fuente y el drenador. Depende de parámetros de fabricación, como el ancho de la capa de óxido y su material, y de parámetros de funcionamiento, como la temperatura y el voltaje del sustrato (por el llamado \textit{efecto cuerpo}\footnote{El efecto cuerpo relaciona el voltaje de sustrato con el voltaje límite. Un cambio en el voltaje de sustrato conlleva un cambio de similar valor en el voltaje límite.}).
 	
-	En la región de corte, no existe canal entre fuente y drenador, así que no se permite el paso de corriente entre ambos. En la región lineal u óhmica, el canal aparece, pero ofrece una cierta impedancia al paso de corriente, de tal manera que el transistor se comporta como una resistencia que disminuye según aumenta $V_{GS}$ con respecto a $V_{DS} + V_{T}$. En la región de saturación, o región activa, el canal permite el paso libre de corriente, y deja de ser dependiente de la relación de voltaje entre $V_{GS}$ y $V_{DS} + V_{T}$.
+	En la región de corte, no existe canal entre fuente y drenador, así que no se permite el paso de corriente entre ambos. En la región lineal u óhmica, el canal aparece, pero ofrece una cierta impedancia al paso de corriente, de tal manera que el transistor se comporta como una resistencia que disminuye según aumenta $V_{GS}$ con respecto a $V_{DS} + V_{T}$. En la región de saturación el canal permite el paso libre de corriente, y deja de ser dependiente de la relación de voltaje entre $V_{GS}$ y $V_{DS} + V_{T}$.
 	
 	\section{Tecnología CMOS}
 	
@@ -601,9 +656,9 @@ hmargin=3cm
 			\hline
 			input & Canal-n & Canal-p & output\\
 			\hline
-			0 & Corte & Activo & $V_{cc}$ \\
+			0 & Corte & Saturación & $V_{cc}$ \\
 			\hline
-			$V_{i}$ & Activo & Corte & 0 \\
+			$V_{i}$ & Saturación & Corte & 0 \\
 			\hline
 		\end{tabular}
 	\end{table}
@@ -687,7 +742,7 @@ hmargin=3cm
 	\end{figure}
 	\footnotetext{Fuente: \cite{eric-thesis}}
 	
-	En rendimiento es equivalente a una implementación habitual con opamps, pero con menor consumo y número de componentes. %TODO: corroborar con eric
+	En rendimiento es equivalente a una implementación habitual con opamps, pero con menor consumo y número de componentes.
 	
 	\subsection{Arquitecturas con solo oscilador en anillo}
 	
@@ -704,7 +759,7 @@ hmargin=3cm
 	Haciendo un análisis en frecuencia de este sistema, tenemos:
 	\begin{figure}[H]
 		\includegraphics[width=0.6\textwidth]{vco-adc-open-loop-lp.png}
-		\caption[Sistema con bucle abierto]{Sistema con bucle abierto\protect\footnotemark} %TODO: mejor nombre para esto
+		\caption[Sistema con bucle abierto]{Sistema con bucle abierto\protect\footnotemark}
 		\label{fig:vco-adc-open-loop-lp.png}
 	\end{figure}
 	\footnotetext{Fuente: \cite{eric-thesis}}
@@ -732,7 +787,7 @@ hmargin=3cm
 		\item Ajuste por circuito: Ajustando individualmente la alimentación de las puertas con componentes pasivos se puede paliar la no linealidad, pero esta técnica pierde fiabilidad una vez se toman en cuenta los errores de fabricación, la temperatura, y pequeñas variaciones en voltaje de alimentación.
 	\end{itemize}
 	
-	Ninguna de las soluciones anteriores es perfecta. %TODO: terminar esto
+	Ninguna de las soluciones anteriores es perfecta.
 	
 \chapter{Propuesta realizada}
 	
@@ -742,7 +797,7 @@ hmargin=3cm
 	
 	La idea fundamental de esta nueva arquitectura es, partiendo de un sistema de ADC por VCO en bucle abierto, estudiar la viabilidad de linealizar la respuesta mediante un bucle de realimentación, haciendo uso de la ganancia intrínseca de la dispone el propio oscilador. Esto eliminaría la necesidad de un amplificador operacional presente en las arquitecturas de VCO con realimentación existentes hoy en día, rebajando por tanto el número de componentes necesarios y el consumo total del sistema.
 	
-	La idea principal de esta arquitectura viene de publicaciones que ya hacen uso de un bucle de realimentación con DAC de 1 bit controlado por frecuencia. En esta publicación: \textit{VCO-ADC linearization by switched capacitorfrequency-to-current conversion}\cite{vco-adc-ruben-eric} ya se destacan los beneficios de un ADC por VCO con realimentación, como son una mayor resistencia al ruido por jitter del reloj, mayor resistencia al ruido térmico de los componentes pasivos, y una mejora importante de la relación señal-ruido con respecto a un ADC VCO en bucle abierto. El problema de la arquitectura propuesta en la publicación es que no consigue prescindir de un amplificador operacional, que sigue siendo el componente más complejo, costoso, y con gran consumo.
+	La idea principal de esta arquitectura viene de publicaciones que ya hacen uso de un bucle de realimentación con DAC de 1 bit controlado por frecuencia. En esta publicación: \textit{VCO-ADC linearization by switched capacitorfrequency-to-current conversion}\cite{vco-adc-ruben-eric} ya se destacan los beneficios de un ADC por VCO con realimentación, principalmente la linealización de la respuesta del VCO. Otros beneficios al usar realimentación son una mayor resistencia al ruido por jitter del reloj, mayor resistencia al ruido térmico de los componentes pasivos, y una mejora importante de la relación señal-ruido con respecto a un ADC VCO en bucle abierto. El problema de la arquitectura propuesta en la publicación es que no consigue prescindir de un amplificador operacional, que es difícil de diseñar con procesos pequeños (<40nm), por no conseguirse suficiente ganancia con el voltaje operativo con el que se trabaja a esas escalas.
 	
 	En este estudio, exploraremos la posibilidad de usar la ganancia intrínseca del VCO para poder eliminar el amplificador operacional, para reducir el consumo y el tamaño del ADC, y abrir su uso a nuevas aplicaciones que requieren de una gran miniaturización y eficiencia.
 	
@@ -802,7 +857,7 @@ hmargin=3cm
 
 	Así, tenemos que a altas frecuencias, el coeficiente de $Q(s)$ aumenta y el de $X(s)$ disminuye. A bajas frecuencias, ocurre lo contrario. Por lo tanto, este sistema aplica un filtro paso alto a $Q(s)$ y un filtro paso bajo a $X(s)$. Esto discrimina el ruido de cuantificación y el de linealidad en la banda de frecuencias de la señal de entrada. Para aumentar la SNR\footnote{Signal to Noise Ratio: ratio entre la señal y el ruido} necesitamos pues un valor alto de ganancia $\beta$ en la realimentación, para que este filtro paso bajo tenga mayor magnitud y mayor potencia.
 	
-	En cuanto a la linealidad del sistema: partimos de un DAC que recoge la frecuencia de salida del VCO y la convierte en corriente. Asumimos que esta conversión es lineal. Esta corriente se resta a la entrada. Integrando esta diferencia (a través del VCO), tiende a cero. Cuando la resta es cero, las señales de entrada y del bucle son iguales, y si la corriente que sale del DAC es lineal con respecto a la frecuencia es lineal, con lo que la corriente de entrada del sistema también es lineal.  Así que consiguiendo un DAC que realice la conversión con un buen nivel de linealidad dentro del ancho de banda de interés, resolvemos el problema de la linealidad en el VCO.
+	En cuanto a la linealidad del sistema: partimos de un DAC que recoge la frecuencia de salida del VCO y la convierte en corriente. Esta conversión debe ser lineal. Esta corriente se resta a la entrada. Integrando esta diferencia (a través del VCO), tiende a cero. Cuando la resta es cero, las señales de entrada y del bucle son iguales, y si la corriente que sale del DAC es lineal con respecto a la frecuencia es lineal, con lo que la corriente de entrada del sistema también es lineal.  Así que consiguiendo un DAC que realice la conversión con un buen nivel de linealidad dentro del ancho de banda de interés, resolvemos el problema de la linealidad en el VCO.
 	
 	\subsection{Lazo de realimentación por capacidades conmutadas}
 	
@@ -817,7 +872,7 @@ hmargin=3cm
 		\label{fig:sw-capacities-sch.png}
 	\end{figure}
 	
-	El circuito consta de dos transistores CMOS, canal-n y canal-p, y un condensador conectado entre fuente y drenador de los transistores. La fuente de alimentación $V4$ se conecta a la fuente del transistor canal-p, y la señal modulada en FM\footnote{Frequency Modulation, modulación en frecuencia.} se conecta a las puertas de ambos transistores. La señal PFM actúa a modo de reloj para controlar la activación de los transistores, que actúan a modo de interruptores.
+	El circuito consta de dos transistores CMOS, canal-n y canal-p, y un condensador conectado entre fuente y drenador de los transistores. La fuente de alimentación $V4$ se conecta a la fuente del transistor canal-p, y la señal modulada en PFM\footnote{Pulse Frequency Modulation, modulación en frecuencia.} se conecta a las puertas de ambos transistores. La señal PFM actúa a modo de reloj para controlar la activación de los transistores, que actúan a modo de interruptores.
 	
 	Este es el diagrama simbólico del sistema:
 	
@@ -896,13 +951,13 @@ hmargin=3cm
 		\end{equation}
 	\end{figure}
 	
-	Con esto, ya tenemos nuestro DAC que transforma la señal modulada en frecuencia de 1 bit de manera sencilla y con pocos componentes.
+	Con esto, ya tenemos nuestro DAC que transforma la señal modulada en frecuencia de 1 bit de manera sencilla y con pocos componentes. Este es el componente más importante de cara a linealizar el VCO, ya que será el encargado de completar el bucle de realimentación. El siguiente paso es comprobar si la conversión es lineal.
 	
 	\section{Simulaciones del modelo}
 	
 	Tras el análisis matemático expuesto en las secciones anteriores, procedemos a realizar simulaciones para comprobar la validez de la arquitectura. Usaremos LTSpice para elaborar esquemáticos y lanzar simulaciones, y Matlab/Octave para analizar los resultados.
 	
-	En estas simulaciones se han usado las librerías de transistores CMOS de la compañía TSMC, cedidas al Departamento de Tecnologías Electrónicas. Estas librerías tienen los parámetros necesarios para poder simular su comportamiento en un programa SPICE.
+	En estas simulaciones se han usado las librerías de transistores CMOS de la compañía TSMC, públicas y disponibles en internet. Estas librerías tienen los parámetros necesarios para poder simular su comportamiento en un programa SPICE.
 	
 	\subsection{Herramientas de simulación}
 	
@@ -977,8 +1032,7 @@ hmargin=3cm
 	
 	Para calcular el periodo en función del tiempo, hacemos una función que guarde el tiempo en que cada periodo comienza, atravesando un threshold, y con el periodo calcularemos su inversa, que es la frecuencia.
 	
-	Encontramos un problema al analizar el dataset: el paso de simulación es variable, lo que significa que los puntos no están uniformemente espaciados con respecto al tiempo, así que primero debemos limpiar estos datos. Generamos un vector de tiempos con el rango del dataset de simulación, e interpolamos los datos originales para sacar el valor de V que corresponde a cada tiempo. Esto genera un cierto error de resolución %TODO: qué tipo de error es?
-	, pero veremos que para nuestro caso es despreciable.
+	Encontramos un problema al analizar el dataset: el paso de simulación es variable, lo que significa que los puntos no están uniformemente espaciados con respecto al tiempo, así que primero debemos limpiar estos datos. Generamos un vector de tiempos con el rango del dataset de simulación, e interpolamos los datos originales para sacar el valor de V que corresponde a cada tiempo. Esto genera un cierto error de resolución, pero veremos que para nuestro caso es despreciable.
 	
 	Este es el algoritmo que define el comportamiento del script de procesado:
 	
@@ -1005,7 +1059,6 @@ end
 freqs_ordered = sort(freqs);
 plot(Tperiods(:,2), freqs_ordered)
 	\end{lstlisting} 
-	%TODO: aquí hay trampilla: por algún motivo la frecuencia sale el doble de lo teórico, así que donde pone 1/T, en el script puse 0.5/T
 
 	Este es el resultado del análisis con el dataset de la simulación \ref{fig:clk-freq-sim-waveform.PNG}:
 	
@@ -1030,10 +1083,8 @@ plot(Tperiods(:,2), freqs_ordered)
 		\label{fig:ltspice-sw-cap-empty.png}
 	\end{figure}
 	
-	En la esquina superior derecha se reúnen los parámetros básicos de los transistores: sus dimensiones en ancho y largo. Los valores usados se corresponden con %TODO: por qué usamos estos tamaños de transistor para simular??
-	%TODO: explicar por qué tienen tamaños diferentes??
-	% TODO: explicar por qué no hay condensador!
-	El voltaje de referencia escogido, 1.8V, %TODO: por qué 1.8??
+	En la esquina superior derecha se reúnen los parámetros básicos de los transistores: sus dimensiones en ancho y largo. Usamos estas medidas porque se acercan a lo usado en chips MOS reales. 
+	El voltaje de referencia escogido es 1.8V, que es estándar para aplicaciones de bajo consumo y bajo tamaño de transistor.
 	
 	Añadimos el reloj de frecuencia variable explicado anteriormente:
 
@@ -1080,9 +1131,7 @@ end
 	
 	En cualquier caso, se puede ver una tendencia creciente en las medias. A falta de una capacidad de simulación mejor, y respaldándonos en las ecuaciones \ref{sw-capacities-eqs}, asumiremos un comportamiento idealmente lineal del DAC por capacidades conmutadas de cara al desarrollo de los siguientes capítulos.
 	
-	%TODO: preguntar a Eric cómo queda esto
-	
-	\subsection{Modelo sencillo de ADC con VCO, abierto} %TODO: este título tampoco me gusta
+	\subsection{Modelo sencillo de ADC con VCO, abierto}
 	
 	Partiendo del modelo \ref{fig:vco-adc-open-loop.png}, montamos el esquemático en LTSpice.
 	
@@ -1097,8 +1146,6 @@ end
 	
 	
 	Para demodular la señal del VCO (modulada en frecuencia), usamos un circuito de primera diferencia (en la parte inferior del esquemático, tomando la señal entre dos puertas cualquiera del VCO). Esta primera diferencia evalúa la diferencia entre dos señales de salida: una directa (primer flip-flop), y una retrasada un ciclo de reloj (segundo flip-flop). Ambas señales pasan por una puerta XOR para terminar de demodularse. El flujo de pulsos de 1 bit presente en la salida (output) equivale a los flancos de la señal del VCO, muestreados a la frecuencia del reloj conectado a los flip-flops. Así es como se demodula la señal que sale del VCO.
-	
-	%TODO: explicar esto mejor? añadir referencias?
 	
 	Este es el resultado de la simulación:
 	
@@ -1115,18 +1162,18 @@ end
 	Para analizar el comportamiento del sistema, usaremos la transformada rápida de Fourier. Compararemos el espectro de la señal original con el de la señal de salida ya demodulada.
 	
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{vco-open-first-diff-fft-2.png}
+		\includegraphics[width=\textwidth]{vco-open-first-diff-fft-2-annotated.png}
 		\caption[FFT de la señal demodulada del VCO abierto]{FFT\footnote{Fast Fourier Transform, o transformada rápida de Fourier} de la señal demodulada del VCO abierto}
 		\label{fig:vco-open-first-diff-fft-2.png}
 	\end{figure}
 
 	Para mejorar la visualización, se ha optado por un fondo blanco, con trazos de color rojo para la señal original y color azul para la señal de salida demodulada.
 	
-	En la FFT \ref{fig:vco-open-first-diff-fft-2.png} se puede ver que la señal original ha sido correctamente modulada y demodulada, porque el primer harmónico coincide con la frecuencia de la señal original, así como el segundo y tercero con sus múltiplos. El umbral de ruido es alto para frecuencias altas, pero limitando el ancho de banda esto no supone un problema. En los siguientes apartados trataremos de aumentar la ganancia del primer harmónico, disminuyendo la de los demás harmónicos y el umbral de ruido.
+	En la FFT \ref{fig:vco-open-first-diff-fft-2.png} se puede ver que la señal original ha sido correctamente modulada y demodulada, porque el primer harmónico coincide con la frecuencia de la señal original, así como el segundo y tercero con sus múltiplos. La distorsión puede verse en los elevados picos harmónicos (marcados con el círculo rojo y el número 1). El umbral de ruido (marcado con la línea roja y el número 2 está el conformado espectral de ruido\footnote{Conformado espectral de ruido: conjunto de frecuencias en las que dominan señales no deseadas (ruido) sobre las deseadas (señal a muestrear)}) es alto para frecuencias altas. En este espectro, el muestreo se hace a mayor frecuencia, de ahí la importancia de limitar el ancho de banda con un procesado posterior, para discriminar este ruido restante. En los siguientes apartados trataremos de aumentar la ganancia del primer harmónico, disminuyendo la de los demás harmónicos y el umbral de ruido.
 	
 	\subsection{Modelo de ADC por VCO con bucle cerrado}\label{ss:vco-open}
 	
-	Visto el comportamiento de un VCO en bucle abierto, es el turno de probar cómo se comporta con un bucle de realimentación. Dado que el DAC no invierte la señal de entrada, debemos buscar una solución para hacer negativo el bucle de realimentación. La solución que hemos escogido para llevar esto a cabo es utilizar una estructura pseudodiferencial. Esto quiere decir que replicamos el circuito de VCO, lazo, y primera diferencia. Invertimos la señal de entrada en una de las ramas, para que ambos VCO trabajen con señales opuestas, y cruzamos los lazos de realimentación. Así conseguimos que que los lazos de realimentación actúen negativamente sobre sus respectivas entradas. % TODO: actúen negativamente???
+	Visto el comportamiento de un VCO en bucle abierto, es el turno de probar cómo se comporta con un bucle de realimentación. Dado que el DAC no invierte la señal de entrada, debemos buscar una solución para hacer negativo el bucle de realimentación. La solución que hemos escogido para llevar esto a cabo es utilizar una estructura pseudodiferencial. Esto quiere decir que replicamos el circuito de VCO, lazo, y primera diferencia. Invertimos la señal de entrada en una de las ramas, para que ambos VCO trabajen con señales opuestas, y cruzamos los lazos de realimentación. Así conseguimos que que los lazos de realimentación actúen negativamente sobre sus respectivas entradas.
 	
 	\begin{figure}[H]
 		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff.png}
@@ -1134,8 +1181,6 @@ end
 		\label{fig:ltspice-vco-closed-diff.png}
 	\end{figure}
 
-	% TODO: explicar todos los bloques!!!
-	
 	A continuación, se hará un análisis de cada bloque del circuito.
 	
 	Señal:
@@ -1166,7 +1211,7 @@ end
 		\label{fig:ltspice-vco-closed-current-mirror-block.png}
 	\end{figure}
 
-	Como buffer antes de la entrada al VCO, escogemos un espejo de corriente formado por dos transitores canal-p. Su función es replicar la corriente de entrada, en la esquina inferior izquierda, por la salida, en la esquina inferior derecha. La alimentación del espejo de corriente viene del rail superior, a un voltaje de alimentación común al sistema, igual al del DAC del bloque anterior, de 1.8V. Este buffer consigue separar la sección de entrada, compuesta por el bloque del negador y DAC de realimentación, del VCO. Así se evitan interacciones no deseadas entre componentes. %TODO: algo más???
+	Como buffer antes de la entrada al VCO, escogemos un espejo de corriente formado por dos transitores canal-p. Su función es replicar la corriente de entrada, en la esquina inferior izquierda, por la salida, en la esquina inferior derecha. La alimentación del espejo de corriente viene del rail superior, a un voltaje de alimentación común al sistema, igual al del DAC del bloque anterior, de 1.8V. Este buffer consigue separar la sección de entrada, compuesta por el bloque del negador y DAC de realimentación, del VCO. Así se evitan interacciones no deseadas entre componentes.
 
 	VCO:
 		
@@ -1212,42 +1257,135 @@ end
 	\end{figure}
 
 	Nótese que la señal de salida $Y$ se ha cambiado a color rojo para crear más contraste con el fondo y facilitar su lectura. La señal sinusoidal de entrada mantiene su color azul.
-
-	 %TODO: comentario de esto. por qué queremos que haya dos señales inversas desfasadas 180 grados, una de ellas entre -1 y 0???
 	
 	El resultado de la modulación y demodulación de la señal se puede ver en la transformada rápida de Fourier:
 	
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{sim-vco-closed-waveform-dem-fft.png}
+		\includegraphics[width=\textwidth]{sim-vco-closed-waveform-dem-fft-annotated.png}
 		\caption[FFT de la forma de onda \ref{fig:sim-vco-closed-waveform-dem.png}]{FFT de la forma de onda \ref{fig:sim-vco-closed-waveform-dem.png}}
 		\label{fig:sim-vco-closed-waveform-dem-fft.png}
 	\end{figure}
 	
-	En rojo, tenemos la señal final demodulada $Y$. En azul, tenemos la señal original que entra al sistema. Como se puede observar, hasta el harmónico principal la diferencia entre la señal original y la digitalizada es mínima. A partir de este primer pico, aparecen harmónicos secundarios, y apartir de 1MGHz, aparece una fuerte distorsión. Esta distorsión es fruto de todo el proceso de cuantificación. Corresponde al término $Q(s)$ %TODO: y $D(s)$ también???
-	en las ecuaciones \ref{vco-closed-loop-s}.
+	En rojo, tenemos la señal final demodulada $Y$. En azul, tenemos la señal original que entra al sistema. Como se puede observar, hasta el harmónico principal la diferencia entre la señal original y la digitalizada es mínima. A partir de este primer pico, aparecen harmónicos secundarios (marcados con el círculo verde y el número 1), y apartir de 1MGHz, aparece una fuerte distorsión (marcados en verde, con el número 2). La distorsión en 1 corresponde al término $Q(s)$ y $D(s)$ en las ecuaciones \ref{vco-closed-loop-s}.
 	
-	Comparando con la figura \ref{fig:vco-open-first-diff-fft-2.png}, la ganancia del harmónico principal es unos 10dB mayor, acercándose a la señal original. Disminuyen notablemente los harmónicos secundarios también. El umbral de ruido se mantiene a unos niveles similares.
+	Comparando con la figura \ref{fig:vco-open-first-diff-fft-2.png}, la ganancia del harmónico principal es unos 10dB mayor, acercándose a la señal original. Disminuyen notablemente los harmónicos secundarios también.
 	
-	Teniendo en cuenta que el sistema con bucle cerrado funciona correctamente, y que sus prestaciones son superiores con respecto al sistema con bucle abierto, solo queda probar la linealidad de la respuesta del sistema con respecto a la entrada.
-	
-	\section{Estudio de la linealidad del ADC por VCO con lazo cerrado}
+	Teniendo en cuenta que el sistema con bucle cerrado funciona correctamente, podemos afirmar que sus prestaciones son superiores con respecto al sistema con bucle abierto. A pesar de ello, no se elimina completamente el ruido de linealidad, que es el objetivo de este estudio. En el apartado siguiente discutiremos soluciones alternativas y trabajo futuro para continuar la labor de investigación expuesta en este documento.
 	
 	\section{Soluciones alternativas}
 	
-	Como se comentó en el apartado \ref{sc:initial-idea}, en este estudio tratamos de prescindir de componentes complejos y costosos, en espacio y en consumo, como el amplificador operacional, aprovechando la ganancia intrínseca del VCO y del lazo de realimentación. Aunque la arquitectura propuesta en el apartado \ref{ss:vco-open} funciona correctamente y supone una importante mejora sobre el modelo de lazo abierto, el error de linealidad no llega a corregirse completamente. En este último apartado exploramos una alternativa plausible que aprovecha gran parte de la arquitectura propuesta, añadiendo ganancia extra en el lazo de realimentación. Esta ganancia, según las ecuaciones \ref{vco-closed-loop-s}, hará que disminuya la magnitud del error de linealidad y de cuantificación. Probando que este parámetro es decisivo en las prestaciones de la arquitectura, queda como trabajo futuro explorar opciones alternativas al amplificador operacional, como arquitecturas de VCO diferentes (más fases, ) %TODO: terminar de redactar esto: fases y vcos en paralelo? esto tiene un nombre; también buscar un convertidor de frecuencia a corriente que aporte más ganancia
+	Como se comentó en el apartado \ref{sc:initial-idea}, en este estudio tratamos de prescindir de componentes complejos y costosos, en espacio y en consumo, como el amplificador operacional, aprovechando la ganancia intrínseca del VCO y del lazo de realimentación. Aunque la arquitectura propuesta en el apartado \ref{ss:vco-open} funciona correctamente y supone una importante mejora sobre el modelo de lazo abierto, el error de linealidad no llega a corregirse completamente. En este último apartado exploramos una alternativa plausible que aprovecha gran parte de la arquitectura propuesta, añadiendo ganancia extra en el lazo de realimentación. Esta ganancia, según las ecuaciones \ref{vco-closed-loop-s}, hará que disminuya la magnitud del error de linealidad y de cuantificación.
 	
-	Incluimos el amplificador operacional en configuración no inversora (para mantener la estructura pseudodiferencial) en el bloque de realimentación, inmediatamente después del circuito de capacidad conmutada:
+	Incluimos el amplificador operacional en el bloque de realimentación, inmediatamente después del circuito de capacidad conmutada:
 	
 	\begin{figure}[H]
 		\includegraphics[width=\textwidth]{vco-closed-opamp-block.png}
 		\caption[Bloque de alimentación modificado con amplificador operacional]{Bloque de alimentación modificado con amplificador operacional}
 		\label{fig:vco-closed-opamp-block.png}
 	\end{figure}
-	
-\chapter{Conclusiones (?)}
-\chapter{Entorno socioeconómico (?)}
-\chapter{Presupuesto / planificación / proceso (?)}
 
+	Optamos por una configuración no inversora, para mantener la estructura pseudiferencial (se podría prescindir de ella en caso de que se use una configuración inversora). Utilizamos un modelo de amplificador operacional de las librerías estándar de LTSpice: un AD8510. Este operacional basado en JFETs está destinado a usos de precisión; es de muy bajo ruido, baja corriente de bias, y gran ancho de banda. Utiliza una alimentación raíl a raíl de $\pm$15V. En cuanto a la ganancia aportada por este amplificador, solo hay que elegir las resistencias en función de la clásica fórmula de ganancia no inversora: $G = 1 + \frac{Rin}{Rf}$. Probando diferentes valores, elegimos una ganancia de 4 ($G = 1 + \frac{3k}{1k}$). Si es más baja, los efectos en el sistema son más difíciles de apreciar. Si es mucho más alta, se llega a una saturación en la entrada del VCO, dejando este de funcionar.
+	
+	Procedemos a simular como de costumbre:
+
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{sim-vco-closed-opamp-waveform.png}
+		\caption[Forma de onda de la simulación del VCO con amplificador operacional en el lazo de realimentación]{Forma de onda de la simulación del VCO con amplificador operacional en el lazo de realimentación}
+		\label{fig:sim-vco-closed-opamp-waveform.png}
+	\end{figure}
+
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{sim-vco-closed-opamp-fft.png}
+		\caption[FFT de la forma de onda \ref{fig:sim-vco-closed-opamp-waveform.png}]{FFT de la forma de onda \ref{fig:sim-vco-closed-opamp-waveform.png}}
+		\label{fig:sim-vco-closed-opamp-fft.png}
+	\end{figure}
+
+	La traza verde corresponde a la salida demodulada, y la traza azul, a la señal de entrada del sistema. Comparando la FFT \ref{fig:sim-vco-closed-opamp-fft.png} con la FFT del circuito sin amplificador operacional, la distorsión es menor: los picos armónicos alcanzan -40dB, mientras que sin operacional, alcanzan -30dB. En cuanto al conformado espectral de ruido, pasa a una ganancia similar: -40dB, frente a los -30dB del sistema sin ganancia por amplificadores. Queda demostrado que la clave para conseguir un mejor comportamiento (menos ruido espectral) es aumentar la ganancia en el lazo de realimentación.
+
+	Habiendo probado que este parámetro es decisivo en las prestaciones de la arquitectura de un ADC VCO con oscilador en anillo, queda como trabajo futuro explorar opciones alternativas al amplificador operacional, como arquitecturas de VCO diferentes (más fases, secciones en paralelo), o sustituir las capacidades conmutadas por otro ADC que permita aumentar de manera significativa su ganancia.
+
+\chapter{Prototipo real}
+
+	En este capítulo, describiremos el prototipo real que se ha construido para probar el funcionamiento de la arquitectura más allá de las simulaciones. La información que aporta un circuito real es valiosa, ya que entran en juego parámetros fundamentales de cara a una aplicación real: defectos y tolerancias de fabricación de los transistores en los chips, variables como la temperatura, las resistencias de las conexiones y secciones de cable, ruidos procedentes de la fuente de alimentación, o campos electromagnéticos presentes en el ambiente. Es importante tener en cuenta todos estos factores para poder crear circuitos predecibles, eficientes, y fiables en el mundo real.
+	
+	Para construir el prototipo, optamos por un diseño en breadboard. Usamos chips de la familia 74HC en formato DIP para las puertas inversoras del VCO. En concreto, optamos por un SN74HC04AN\footnote{Hoja de especificaciones: \url{https://www.ti.com/lit/ds/symlink/sn74hc04.pdf}}, de Texas Instruments, con seis puertas inversoras independientes y alimentación y masa común. Para el espejo de corriente, elegimos un chip ALD1107\footnote{Hoja de especificaciones: \url{https://www.aldinc.com/pdf/ALD1107.pdf}} de Advanced Linear Devices, que reúne en su interior cuatro transistores MOS canal-p, y está diseñado para circuitos con alta ganancia y alta precisión.
+	
+	Para cada una de las ramas de la estructura pseudodiferencial, necesitaremos dos chips de inversores y uno de MOSFETs. Uno de los inversores estará dedicado al VCO, y otro al DAC del lazo de realimentación. Deben estar separados porque el pin de alimentación del chip del VCO está conectada al espejo de corriente, mientras que la del chip del DAC está conectada a la fuente de alimentación general. Duplicando estos componentes para montar la otra rama, nos quedan cuatro chips de inversores y dos de MOSFETs. Además, necesitamos resistencias y condensadores para el divisor de tensión y la etapa de entrada al sistema.
+	
+	En las siguientes imágenes se expone el prototipo construido:
+	
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{proto-pcb-whole-annotated.png}
+		\caption[Prototipo del ADC VCO, placa completa]{Prototipo del ADC VCO, placa completa}
+		\label{fig:proto-pcb-whole-annotated.png}
+	\end{figure}
+
+	Los bloques y las conexiones externas aparecen anotadas en rojo (solo la rama izquierda; la rama derecha es una réplica exacta).
+	
+	\begin{itemize}
+		\item Bloque 1: Entrada y divisor de tensión
+		\item Bloque 2: DAC del lazo de realimentación
+		\item Bloque 3: Espejo de corriente
+		\item Bloque 4: VCO en anillo, salida
+	\end{itemize}
+	
+	El circuito montado es idéntico al propuesto en el apartado \ref{ss:vco-open}, con la diferencia de que en el DAC del lazo de realimentación se usan tres puertas inversoras en serie para tratar de aumentar su ganancia (varios transistores MOS en paralelo equivalen a uno cuyo ancho es la suma de los individuales. Este aumento de las dimensiones hace que aumente la ganancia máxima de dicho transistor).
+	
+	Nótese que en este circuito no aparece la primera diferencia, que es la última etapa en el diseño del apartado \ref{ss:vco-open}. Para este prototipo, la primera diferencia se aplicaría a la señal de salida del VCO una vez se muestreara con el aparato de medida.
+	
+	La situación de restricciones por COVID-19 en el ámbito universitario ha hecho imposible obtener acceso a los equipos inicialmente previstos para probar este prototipo. Es por eso que para este apartado solo hemos podido tomar muestras con un osciloscopio sencillo, sin capacidad de almacenarlas digitalmente y analizarlas más tarde, como se pensaba hacer en un principio.
+	
+	
+	
+\chapter{Conclusiones y Discusión}
+
+	A lo largo de este estudio, se ha expuesto el trabajo de investigación llevado a cabo para conseguir solucionar el problema de linealidad de una arquitectura de ADC basado en VCO en anillo. Con tal fin, se han hecho estudios matemáticos, y numerosas simulaciones con su correspondiente discusión de resultados.
+	
+	La interpretación de cada resultado se ha expuesto en su correspondiente apartado, así que este capítulo queda reservado para un análisis a grandes rasgos del resultado global de todo el estudio.
+	
+	El objetivo principal de lograr una arquitectura funcional ha sido cumplido. También se han encontrado los parámetros decisivos de cara a un diseño para aplicación práctica (principalmente, la ganancia del lazo de realimentación). Aunque no se haya logrado un resultado perfecto, trabajos como este son necesarios para sentar una base sobre la que posteriores estudios continuarán. 
+	
+	La conclusión general es sencilla: la ganancia intrínseca del VCO y del DAC no es suficiente para linealizar el circuito por medio de un lazo de realimentación, así que debe proveerse otra fuente de ganancia. 
+	
+	A pesar de ello, llegar hasta esta afirmación ha sido fruto de meses de investigación sobre la materia, y esta información, debidamente probada en este documento, será útil para la actividad del próximo que coja el relevo de esta línea de investigación.
+	
+	En un aspecto más personal, este trabajo ha cumplido su objetivo: darme la oportunidad de conocer más a fondo un campo del que apenas conocía al inicio de este proyecto. También he podido poner en práctica la herramienta más importante que he adquirido durante la carrera: ganas de no dejar de aprender.
+	
+
+\chapter{Presupuesto}
+
+	\begin{table}[H]
+		\begin{tabular}{|c|c|c|c|c|}
+			Código & Concepto & Unidades & €/Ud. & Subtotal (€) \\
+			\hline
+			1.1 & Investigador Jr. (h) & 350 & 5 & 150 \\
+			1.2 & Investigador Sr. (h) & 35 & 10 & 350 \\
+			1.3 & Puesto lab. invest. (h) & 300 & 3 & 900 \\
+			1.4 & Material lab. \footnote{Osciloscopio, generador de señal, fuente de alimentación}  (h) & 100 &
+			 4.5 & 450 \\
+			1.5 & Equipo informático & 1 & 900 & 900 \\
+			1.6 & Licencia Matlab & 1 & 800 & 800 \\
+			1.7 & Componentes prototipo & 1 & 14.6 & 14.6 \\
+		\end{tabular}
+		\begin{tabular}{lr}
+			Total & 3564.6
+		\end{tabular}
+	\caption{Presupuesto general}
+	\end{table}
+
+	\begin{table}[H]
+		\begin{tabular}{|c|c|c|c|c|}
+			Código & Concepto & Unidades & €/Ud. & Subtotal (€) \\
+			\hline
+			2.1 & Inversor 74HC & 4 & 0.5 & 2 \\
+			2.2 & MOSFETs 1107 & 2 & 1 & 2 \\
+			2.3 & Cable & 1 & 2 & 2 \\
+			2.4 & Protoboard & 1 & 8 & 8 \\
+			2.5 & Resistencia & 6 & 0.05 & 0.30 \\
+			2.6 & Condensador & 2 & 0.15 & 0.30 \\
+		\end{tabular}
+		\caption{Presupuesto del prototipo, desagregado}
+	\end{table}
 %----------
 %	BIBLIOGRAFÍA
 %----------	
