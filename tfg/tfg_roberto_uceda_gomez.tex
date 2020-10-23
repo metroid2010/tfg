@@ -368,10 +368,13 @@ hmargin=3cm
 		\caption{Lista de abreviaturas}
 		\label{tab:table1}
 		\begin{tabular}{>{\bf}p{4cm}|p{10cm}}
-			ADC & Analog to Digital Converter, Convertidor Analógico-Digital \\
+			ADC & Analog to Digital Converter, Convertidor Analógico a Digital \\
 			CMOS & Complimentary Metal-Oxide Semiconductor \\
+			DAC & Digital to Analog Converter, Convertidor Digital a Analógico \\
 			MOSFET & Metal Oxide Semiconductor Field Effect Transistor, también llamados transistores MOS \\
-			VCO & Voltage Controlled Oscillator, Oscilador controlado por voltaje \\
+			PFM & Pulse Frequency Modulation, Modulación en Frecuencia de Pulsos \\
+			SNR & Signal to Noise Ratio, Ratio señal-ruido \\
+			VCO & Voltage Controlled Oscillator, Oscilador Controlado por Voltaje \\
 		\end{tabular}
 	\end{center}
 \end{table}
@@ -487,7 +490,7 @@ hmargin=3cm
 	El comportamiento general de este tipo de transistores se modela a través de regiones de funcionamiento, que dependen del voltaje $V_{GS}$, o voltaje entre puerta y fuente.
 	La siguiente tabla describe esta relación para un transistor tipo n. Para un tipo p, las reglas aplican igual, invirtiendo el signo de los voltajes.
 	
-	\begin{table}[H]
+	\begin{table}[H]\caption{Regiones de funcionamiento de un transistor MOS canal-n}\label{tb:n-channel-regions}
 		\begin{tabular}{|c|c|}
 			\hline
 			$V_{GS}$ & Región \\
@@ -651,7 +654,7 @@ hmargin=3cm
 	
 	La siguiente tabla expone el régimen de funcionamiento de ambos transistores, atendiendo a la señal entrada:
 	
-	\begin{table}[H]
+	\begin{table}[H]\caption{Estado de los transistores del inversor en función de la señal de entrada}\label{tb:inverter-trans-state}
 		\begin{tabular}{|c|c|c|c|}
 			\hline
 			input & Canal-n & Canal-p & output\\
@@ -797,7 +800,7 @@ hmargin=3cm
 	
 	La idea fundamental de esta nueva arquitectura es, partiendo de un sistema de ADC por VCO en bucle abierto, estudiar la viabilidad de linealizar la respuesta mediante un bucle de realimentación, haciendo uso de la ganancia intrínseca de la dispone el propio oscilador. Esto eliminaría la necesidad de un amplificador operacional presente en las arquitecturas de VCO con realimentación existentes hoy en día, rebajando por tanto el número de componentes necesarios y el consumo total del sistema.
 	
-	La idea principal de esta arquitectura viene de publicaciones que ya hacen uso de un bucle de realimentación con DAC de 1 bit controlado por frecuencia. En esta publicación: \textit{VCO-ADC linearization by switched capacitorfrequency-to-current conversion}\cite{vco-adc-ruben-eric} ya se destacan los beneficios de un ADC por VCO con realimentación, principalmente la linealización de la respuesta del VCO. Otros beneficios al usar realimentación son una mayor resistencia al ruido por jitter del reloj, mayor resistencia al ruido térmico de los componentes pasivos, y una mejora importante de la relación señal-ruido con respecto a un ADC VCO en bucle abierto. El problema de la arquitectura propuesta en la publicación es que no consigue prescindir de un amplificador operacional, que es difícil de diseñar con procesos pequeños (<40nm), por no conseguirse suficiente ganancia con el voltaje operativo con el que se trabaja a esas escalas.
+	La idea principal de esta arquitectura viene de publicaciones que ya hacen uso de un bucle de realimentación con DAC de 1 bit controlado por frecuencia. En esta publicación: \textit{VCO-ADC linearization by switched capacitor frequency-to-current conversion}\cite{vco-adc-ruben-eric} ya se destacan los beneficios de un ADC por VCO con realimentación, principalmente la linealización de la respuesta del VCO. Otros beneficios al usar realimentación son una mayor resistencia al ruido por jitter del reloj, mayor resistencia al ruido térmico de los componentes pasivos, y una mejora importante de la relación señal-ruido con respecto a un ADC VCO en bucle abierto. El problema de la arquitectura propuesta en la publicación es que no consigue prescindir de un amplificador operacional, que es difícil de diseñar con procesos pequeños (<40nm), por no conseguirse suficiente ganancia con el voltaje operativo con el que se trabaja a esas escalas.
 	
 	En este estudio, exploraremos la posibilidad de usar la ganancia intrínseca del VCO para poder eliminar el amplificador operacional, para reducir el consumo y el tamaño del ADC, y abrir su uso a nuevas aplicaciones que requieren de una gran miniaturización y eficiencia.
 	
@@ -1335,7 +1338,23 @@ end
 	
 	La situación de restricciones por COVID-19 en el ámbito universitario ha hecho imposible obtener acceso a los equipos inicialmente previstos para probar este prototipo. Es por eso que para este apartado solo hemos podido tomar muestras con un osciloscopio sencillo, sin capacidad de almacenarlas digitalmente y analizarlas más tarde, como se pensaba hacer en un principio.
 	
+	A continuación se presentan las medidas tomadas con un osciloscopio analógico:
 	
+	\begin{figure}[H]
+		\includegraphics[width=0.7\textwidth]{proto-osc-clear-cropped.png}
+		\caption[Señal adquirida en osciloscopio I]{Señal adquirida en osciloscopio I}
+		\label{fig:proto-osc-clear-cropped.png}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\includegraphics[width=0.7\textwidth]{proto-osc-blurry-cropped.png}
+		\caption[Señal adquirida en osciloscopio II]{Señal adquirida en osciloscopio II}
+		\label{fig:proto-osc-blurry-png.png}
+	\end{figure}
+
+	Ambas señales están tomadas con una sonda no multiplicadora a la salida del VCO. La señal de entrada está proporcionada por un generador de señal sinusoidal de aproximadamente 1V de voltaje pico a pico. La primera de las imágenes (I) representa la señal del VCO bajo una entrada de unos 100Hz. En pantalla, aparece una traza relativamente limpia; esto indica que el VCO está oscilando a una frecuencia relativamente baja, así tanto el osciloscopio puede capturar la señal sin perder resolución. En la siguiente imagen (II), la frecuencia de la señal de entrada aumenta hasta los 10KHz. En esta, la traza es más borrosa, porque el VCO está oscilando más rápido de lo que el osciloscopio es capaz de leer.
+	
+	A pesar de no haber podido hacer un análisis en profundidad del prototipo por la falta de acceso a aparatos de medición avanzados, es posible ver la forma de onda que produce el oscilador en anillo, y cómo esta varía al cambiar los parámetros de entrada (principalmente, la frecuencia de la onda sinusoidal).
 	
 \chapter{Conclusiones y Discusión}
 
@@ -1356,25 +1375,26 @@ end
 
 	\begin{table}[H]
 		\begin{tabular}{|c|c|c|c|c|}
+			\hline
 			Código & Concepto & Unidades & €/Ud. & Subtotal (€) \\
 			\hline
-			1.1 & Investigador Jr. (h) & 350 & 5 & 150 \\
-			1.2 & Investigador Sr. (h) & 35 & 10 & 350 \\
+			1.1 & Investigador Jr. (h) & 350 & 30 & 4500 \\
+			1.2 & Investigador Sr. (h) & 35 & 40 & 1400 \\
 			1.3 & Puesto lab. invest. (h) & 300 & 3 & 900 \\
 			1.4 & Material lab. \footnote{Osciloscopio, generador de señal, fuente de alimentación}  (h) & 100 &
 			 4.5 & 450 \\
 			1.5 & Equipo informático & 1 & 900 & 900 \\
 			1.6 & Licencia Matlab & 1 & 800 & 800 \\
 			1.7 & Componentes prototipo & 1 & 14.6 & 14.6 \\
+			\hline
+			\multicolumn{4}{r}{Total} & \multicolumn{1}{r}{8964.6 €} \\
 		\end{tabular}
-		\begin{tabular}{lr}
-			Total & 3564.6
-		\end{tabular}
-	\caption{Presupuesto general}
+		\caption{Presupuesto general}
 	\end{table}
 
 	\begin{table}[H]
 		\begin{tabular}{|c|c|c|c|c|}
+			\hline
 			Código & Concepto & Unidades & €/Ud. & Subtotal (€) \\
 			\hline
 			2.1 & Inversor 74HC & 4 & 0.5 & 2 \\
@@ -1383,6 +1403,8 @@ end
 			2.4 & Protoboard & 1 & 8 & 8 \\
 			2.5 & Resistencia & 6 & 0.05 & 0.30 \\
 			2.6 & Condensador & 2 & 0.15 & 0.30 \\
+			\hline
+			\multicolumn{4}{r}{Total} & \multicolumn{1}{r}{14.6 €} \\
 		\end{tabular}
 		\caption{Presupuesto del prototipo, desagregado}
 	\end{table}
