@@ -272,7 +272,7 @@ hmargin=3cm
 \setcounter{page}{3}
 	
 	% ESCRIBIR EL RESUMEN AQUÍ
-	En este trabajo se desarrolla un estudio cuyo objetivo es encontrar una manera de linealizar el comportamiento de una nueva arquitectura de ADC basado en VCO en anillo, sin necesidad del uso de amplificador operacional, como se ha hecho hasta ahora. La solución propuesta es el uso un lazo de realimentación negativa, con un DAC de un bit basado en capacidades conmutadas y una estructura pseudodiferencial, con un demodulador de primera diferencia. Tras el estudio matemático del sistema, se realizarán diferentes simulaciones, comparando las prestaciones de esta arquitectura realimentada respecto a la arquitectura en lazo abierto. Vista una clara mejora, pero aún lejos de ser esta solución perfecta, se discutirán soluciones alternativas y futuras vías por las continuar desarrollando este estudio. En último lugar, se presentará un prototipo funcional construido sobre placa de prototipado.
+	En este trabajo se desarrolla un estudio cuyo objetivo es encontrar una manera de linealizar el comportamiento de una nueva arquitectura de ADC basado en VCO en anillo, sin necesidad del uso de amplificador operacional, como se ha hecho hasta ahora. La solución propuesta es el uso un lazo de realimentación negativa, con un DAC de un bit basado en capacidades conmutadas, y una estructura pseudodiferencial, con un demodulador de primera diferencia. Tras el estudio matemático del sistema, se realizarán diferentes simulaciones, comparando las prestaciones de esta arquitectura realimentada respecto a la arquitectura en lazo abierto. Vista una clara mejora, pero aún lejos de ser esta solución perfecta, se discutirán soluciones alternativas y futuras vías por las continuar desarrollando este estudio. En último lugar, se presentará un prototipo funcional construido sobre placa de prototipado.
 	
 	
 	\textbf{Palabras clave: Microelectrónica, ADC-VCO, Oscilador en anillo, Conversión Analógico-Digital, CMOS}
@@ -393,26 +393,26 @@ hmargin=3cm
 
 \chapter{Introducción}
 
-	Los ADC\footnote{Analog to Digital Converter. En español, Convertidor Analógico a Digital} son omnipresentes en nuestro día a día. Sin ellos, no sería posible realizar una llamada con un teléfono móvil, disfrutar de un sistema de climatización en nuestro hogar o utilizar el control de crucero en nuestro coche. El objetivo de estos importantes bloques de la electrónica es convertir señales físicas, como ondas electromagnéticas, temperatura ambiente o la posición de un eje, en señales digitales interpretables por un sistema basado en la electrónica digital. Una vez se tienen estas señales, normalmente compuestas por un flujo de bits, pueden ser procesadas por un microcontrolador para después tomar las decisiones necesarias para conseguir el objetivo deseado, como activar el compresor del aire acondicionado si la temperatura sube de cierto límite preestablecido.
+	Los ADC\footnote{Analog to Digital Converter. En español, Convertidor Analógico a Digital} son onmipresentes en nuestro día a día. Sin ellos, no sería posible realizar una llamada con un teléfono móvil, o disfrutar de un sistema de climatización en nuestro hogar, o utilizar el control de crucero en nuestro coche. El objetivo de estos importantes bloques de la electrónica es convertir señales físicas, como ondas electromagnéticas, temperatura ambiente, o la posición de un eje, en señales digitales interpretables por un sistema basado en la electrónica digital. Una vez tenemos estas señales, normalmente compuestas por un flujo de bits, pueden ser procesadas por un microcontrolador para después tomar las decisiones necesarias para conseguir el objetivo deseado, como activar el compresor del aire acondicionado si la temperatura sube de cierto límite preestablecido.
 	
-	Cada día que pasa aumenta la demanda de aparatos más rápidos, compactos y eficientes. Por regla general, la miniaturización de la electrónica tiene un impacto positivo en estos criterios. Los transistores son los componentes fundamentales de los circuitos integrados. Estos transistores aumentan su eficiencia energética según disminuye su tamaño, además de permitir mayores frecuencias de operación. Por esto, existe un gran incentivo en la búsqueda de arquitecturas y técnicas de fabricación que permitan transistores más pequeños.
+	Cada día que pasa aumenta la demanda de aparatos más rápidos, compactos, y eficientes. Por regla general, la miniaturización de la electrónica tiene un impacto positivo en estos criterios. Los transistores son los componentes fundamentales de los circuitos integrados. Estos transistores aumentan su eficiencia energética según disminuye su tamaño, además de permitir mayores frecuencias de operación. Por esto, existe un gran incentivo en la búsqueda de arquitecturas y técnicas de fabricación que permitan transistores más pequeños.
 	
 	La ley de Moore ayuda a poner un poco de contexto histórico a esta carrera por la disminución de los transistores. Gordon Moore anunció en 1965 una tendencia en la, por aquel entonces emergente, industria de la electrónica: cada dos años se duplicaba la cantidad de componentes presente en un circuito integrado en la misma superficie \cite{moorelaw}. A más componentes, mayor poder de procesamiento, pero también mayor coste de fabricación por la complejidad y delicadeza requerida en los procesos.
 	
 	\section{Motivación del trabajo}
 	
-	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes, reducción del tamaño de los transistores), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta, los más comunes en aplicaciones de bajo ancho de banda y alta resolución (audio, sensores biométricos y de alta precisión), requieren de un integrador. Estos integradores normalmente trabajan en el ámbito analógico y la gran mayoría usan un amplificador operacional, con gran número de componentes y alto consumo.
+	Debido a las altas velocidades de reloj y los requisitos de consumo y fabricación (espacio ocupado, número de componentes, reducción del tamaño de los transistores), los ADC usados actualmente presentan problemas. Los ADC basados en la arquitectura sigma delta, los más comunes en aplicaciones de bajo ancho de banda y alta resolución (audio, sensores biométricos y de alta precisión), requieren de un integrador. Estos integradores normalmente trabajan en el ámbito analógico, y la gran mayoría usan un amplificador operacional, con gran número de componentes y alto consumo.
 	
 	Con las tecnologías de fabricación actuales, se consiguen transistores de tamaños diminutos, con buen tiempo de respuesta y bajo consumo en aplicaciones digitales, pero efectos adversos en aplicaciones analógicas.
-	Algunos de estos efectos son la degradación de la señal por efectos cuánticos y defectos en la fabricación (el tamaño nominal de un transistor CMOS de tecnología puntera es entre un cuarto y una décima parte la longitud de onda de la luz ultravioleta usada en litografía), altas corrientes parásitas por el bajo tamaño de la puerta del transistor y limitaciones en la simulación de sistemas por la alta densidad y complejidad en los microchips actuales. Otro efecto negativo que tiene la miniaturización en el diseño de microcircuitos es la falta de escalabilidad de la tensión de corte de los MOSFET. Mientras que la tensión de alimentación baja con el tamaño, la de corte no lo hace en la misma medida, haciendo más difícil el diseño de estructuras de alta ganancia, como los amplificadores operacionales, que requieren de suficiente diferencia entre ambas tensiones.
+	Algunos de estos efectos son la degradación de la señal por efectos cuánticos y defectos en la fabricación (el tamaño nominal de un transistor CMOS de tecnología puntera es entre un cuarto y una décima parte la longitud de onda de la luz ultravioleta usada en litografía), altas corrientes parásitas por el bajo tamaño de la puerta del transistor, y limitaciones en la simulación de sistemas por la alta densidad y complejidad en los microchips actuales. Otro efecto negativo que tiene la miniaturización en el diseño de microcircuitos es la falta de escalabilidad de la tensión de corte de los MOSFET. Mientras que la tensión de alimentación baja con el tamaño, la de corte no lo hace en la misma medida, haciendo más difícil el diseño de estructuras de alta ganancia, como los amplificadores operacionales, que requieren de suficiente diferencia entre ambas tensiones.
 	
-	Además, a pesar de que el consumo individual de los transistores disminuye al reducirse su tamaño, lo hace de manera lineal, mientras que su incremento en número por unidad de superficie crece de manera cuadrática. Esto provoca un gran problema en cuanto a disipación térmica, de manera que aumentar el número de componentes en circuitos integrados no es una solución en ciertos casos en que no pueda gestionarse correctamente el calor generado, como en sistemas embebidos y aplicaciones de muy bajo consumo, como dispositivos del IoT\footnote{Internet of Things. En español: Internet de las Cosas}.
+	Además, a pesar de que el consumo individual de los transistores disminuye al reducirse su tamaño, lo hace de manera lineal, mientras que su incremento en número por unidad de superficie crece de manera cuadrática. Esto provoca un gran problema en cuanto a disipación térmica, por eso aumentar el número de componentes en circuitos integrados no es una solución en ciertos casos en que no pueda gestionarse correctamente el calor generado, como en sistemas embebidos y aplicaciones de muy bajo consumo, como dispositivos del IoT\footnote{Internet of Things. En español: Internet de las Cosas}.
 	
-	Los ADC basados en VCO actuales necesitan una compensación de linealidad mediante circuitería digital, que termina ocupando la mayor parte de la superficie del chip. Este trabajo se centra en la búsqueda de una nueva arquitectura usando un VCO tanto como integrador como cuantificador, que permita ahorrar la necesidad de circuitos de compensación y circuitos analógicos complejos (amplificadores operacionales), manteniendo o mejorando el comportamiento lineal, la resolución y el ancho de banda de las arquitecturas ya existentes.
+	Los ADC basados en VCO actuales necesitan una compensación de linealidad mediante circuitería digital, que termina ocupando la mayor parte de la superficie del chip. Este trabajo se centra en la búsqueda de una nueva arquitectura usando un VCO tanto como integrador como cuantificador, que permita ahorrar la necesidad de circuitos de compensación y circuitos analógicos complejos (amplificadores operacionales), manteniendo o mejorando el comportamiento lineal, la resolución, y el ancho de banda de las arquitecturas ya existentes.
 	
 	\section{Objetivos}
 	
-	El grueso de este trabajo se desarrolla en el plano teórico. El primer paso es realizar un estudio de las arquitecturas de ADC ya existentes, centrándose en aquellas que emplean VCOs en anillo. A partir de este estudio, se estudiará la viabilidad de varias ideas de diferentes publicaciones que aún no han sido implementadas. Para esto, se utilizarán herramientas de simulación basadas en SPICE\footnote{\textit{Simulation Program with Integrated Circuits Emphasis}. En español, \textit{Programa de simulación con énfasis en circuitos integrados}}. Una vez probada la efectividad de la arquitectura, la siguiente tarea será montar un circuito con componentes discretos sobre protoboard, medir los parámetros de funcionamiento y así dejar demostrada la factibilidad de la arquitectura. También quedarán claros los pasos siguientes de cara a continuar esta investigación, con el objetivo final de ofrecer una solución ventajosa y económicamente viable que pueda ser integrada en dispositivos en el mercado.
+	El grueso de este trabajo se encuentra en el plano teórico. El primer paso es realizar un estudio de las arquitecturas de ADC ya existentes, centrándose en aquellas que emplean VCOs en anillo. A partir de este estudio, se estudiará la viabilidad de varias ideas de diferentes publicaciones que aún no han sido implementadas. Para esto, se utilizarán herramientas de simulación basadas en SPICE. Una vez probada la efectividad de la arquitectura, la siguiente tarea será montar un circuito con componentes discretos sobre protoboard, medir los parámetros de funcionamiento, y así dejar demostrada la factibilidad de la arquitectura. También quedarán claros los pasos siguientes de cara a continuar esta investigación, con el objetivo final de ofrecer una solución ventajosa y económicamente viable que pueda ser integrada en dispositivos en el mercado.
 	
 	\section{Impacto}\label{st:impact}
 	
@@ -420,9 +420,9 @@ hmargin=3cm
 	
 	Medir el impacto social y económico de un trabajo de naturaleza tan teórica como el presente no es fácil. El fruto de esta investigación es una mejora, en ocasiones marginal, sobre tecnologías ya existentes. A pesar de ello, estos pequeños avances, vistos desde una perspectiva macroscópica y no granular, permiten el progreso de industrias, mercados, servicios, que hace apenas un siglo serían impensables.
 	
-	Un ejemplo visible del impacto de la miniaturización de componentes como ADCs está en la enorme popularidad de la gozan actualmente los \textit{wearables}, como por ejemplo, los relojes inteligentes. Hace apenas dos décadas, era difícil pensar que un reloj de pulsera tendría la capacidad de avisar a los servicios de emergencia si detectara un paro cardíaco. Hoy en día, tecnologías biomédicas como esta están al alcance del público general. Esto no sería posible sin los avances en eficiencia, miniaturización, precisión, fiabilidad y coste de dispositivos microelectrónicos. 
+	Un ejemplo visible del impacto de la miniaturización de componentes como ADCs está en la enorme popularidad de la gozan actualmente los \textit{wearables}, como por ejemplo, los relojes inteligentes. Hace apenas dos décadas, era difícil pensar que un reloj de pulsera tendría la capacidad de avisar a los servicios de emergencia si detectara un paro cardíaco. Hoy en día, tecnologías biomédicas como esta están al alcance del público general. Esto no sería posible sin los avances en eficiencia, miniaturización, precisión, fiabilidad, y coste de dispositivos microelectrónicos. 
 	
-	Desde el punto de vista corporativo, una reducción de costes supone una posibilidad de mejorar el margen de beneficio o bajar el precio de mercado para aumentar la clientela y por economías de escala seguir bajando el coste de producción, lo que lleva a más beneficios.
+	Desde el punto de vista corporativo, una reducción de costes supone una posibilidad de mejorar el margen de beneficio, o bajar el precio de mercado para aumentar la clientela, y por economías de escala seguir bajando el coste de producción, lo que lleva a más beneficios.
 	
 	Desde un punto de vista social, un menor coste de cara al consumidor permite a un público mayor tener acceso a los servicios que brindan estas nuevas tecnologías. Un ejemplo de beneficio social directo de los \textit{wearables} es la posibilidad de monitorizar constantemente pacientes con cardiopatías o condiciones como la epilepsia. La reducción de costes de estas tecnologías permiten que cualquiera pueda tener acceso a estos aparatos que, en muchas ocasiones, pueden suponer la diferencia entre la vida y la muerte.
 
@@ -430,13 +430,13 @@ hmargin=3cm
 
 	Este documento trata de una labor de investigación puramente teórica, sin un marco legal directamente aplicable. Partiendo del apartado del impacto (\ref{st:impact}), sí es posible comentar qué repercusiones existen a raíz de las innovaciones que permiten la proliferación de dispositivos del Internet of Things.
 	
-	El Internet of Things propone la adopción de redes de pequeños sistemas de adquisición de datos, conectados entre ellos y a internet. Electrodomésticos, domótica, \textit{wearables}, autómatas industriales, transportes personales y colectivos, infraestructura urbana, incluso aplicaciones militares: el IoT promete conectar todos estos dispositivos individuales para intercambiar información entre ellos. En el caso de la domótica, por ejemplo, una petición a un servicio web del tiempo atmosférico haría posible que las persianas y toldos se recogieran solos en caso de que se acercara una fuerte borrasca, para evitar daños por viento. En cuanto a los automóviles, una conexión entre sus ordenadores de abordo permitiría compartir información del estado del pavimento o de la densidad de tráfico, para que el navegador nos recomendara una ruta más óptima a nuestro destino. La tecnología que hace esto posible se asienta sobre los sistemas embebidos y la microelectrónica: en unos años la arquitectura propuesta en esta memoria podría formar parte de uno de los adaptadores wifi con los que se conecta al router uno de los sensores domóticos o podría ser parte del sistema de medición del terreno integrado en los amortiguadores del coche.
+	El Internet of Things propone la adopción de redes de pequeños sistemas de adquisición de datos, conectados entre ellos y a internet. Electrodomésticos, domótica, \textit{wearables}, autómatas industriales, transportes personales y colectivos, infraestructura urbana, incluso aplicaciones militares: el IoT promete conectar todos estos dispositivos individuales para intercambiar información entre ellos. En el caso de la domótica, por ejemplo, una petición a un servicio web del tiempo atmosférico haría posible que las persianas y toldos se recogieran solos en caso de que se acercara una fuerte borrasca, para evitar daños por viento. En cuanto a los automóviles, una conexión entre sus ordenadores de abordo permitiría compartir información del estado del pavimento o de la densidad de tráfico, para que el navegador nos recomendara una ruta más óptima a nuestro destino. La tecnología que hace esto posible se asienta sobre los sistemas embebidos y la microelectrónica: en unos años la arquitectura propuesta en esta memoria podría formar parte de uno de los adaptadores wifi con los que se conecta al router uno de los sensores domóticos, o podría ser parte del sistema de medición del terreno integrado en los amortiguadores del coche.
 	
-	Es innegable el potencial de esta tecnología de ofrecer un servicio práctico y conveniente. Pero la generación y manipulación de cantidades desorbitadas de información supone un riesgo si no se regula. En los últimos años, han salido a la luz numerosos escándalos de violación de privacidad a manos de grandes empresas del sector online. Un ejemplo de esto es el caso de Cambridge Analytica y Facebook y su papel en la manipulación de cientos de elecciones democráticas en todo el globo. La herramienta que permitió a esta firmar lograr tal hazaña fue la enorme cantidad de datos personales obtenida de Facebook. Queda claro, pues, la importancia de regular tanto la adquisición de datos como su procesamiento, redistribución y protección.
+	Es innegable el potencial de esta tecnología de ofrecer un servicio práctico y conveniente. Pero la generación y manipulación de cantidades desorbitadas de información supone un riesgo si no se regula. En los últimos años, han salido a la luz numerosos escándalos de violación de privacidad a manos de grandes empresas del sector online. Un ejemplo de esto es el caso de Cambridge Analytica y Facebook, y su papel en la manipulación de cientos de elecciones democráticas en todo el globo. La herramienta que permitió a esta firmar lograr tal hazaña fue la enorme cantidad de datos personales obtenida de Facebook. Queda claro, pues, la importancia de regular tanto la adquisición de datos como su procesamiento, redistribución y protección.
 	
-	En la última década, la Unión Europea ha tomado importantes medidas relacionadas con la privacidad y protección de datos, culminando en la General Data Protection Regulation\footnote{Disponible en \url{http://data.europa.eu/eli/reg/2016/679/oj}} (o GDPR), propuesta en 2016 y en vigor desde 2018. Esta ley europea unifica las leyes relevantes de cada uno de los estados miembros, dando un marco legal al derecho a la privacidad y la intimidad a nivel de toda la Unión. La GDPR impone, entre otros, la necesidad de proteger la información de las personas físicas que acceden al servicio en cuestión, como negocios físicos o páginas web; la obligación de ofrecer herramientas que permitan a los usuarios de los servicios ver, modificar o eliminar toda la información relacionada con ellos de la que se disponga; o informar a los usuarios de qué usos se da a los datos recopilados, tanto del propio servicio como de terceros con los que se pueda compartir dicha información.
+	En la última década, la Unión Europea ha tomado importantes medidas relacionadas con la privacidad y protección de datos, culminando en la General Data Protection Regulation\footnote{Disponible en \url{http://data.europa.eu/eli/reg/2016/679/oj}} (o GDPR), propuesta en 2016, y en vigor desde 2018. Esta ley europea unifica las leyes relevantes de cada uno de los estados miembros, dando un marco legal al derecho a la privacidad y la intimidad a nivel de toda la Unión. La GDPR impone, entre otros, la necesidad de proteger la información de las personas físicas que acceden al servicio en cuestión, como negocios físicos o páginas web; la obligación de ofrecer herramientas que permitan a los usuarios de los servicios ver, modificar, o eliminar toda la información relacionada con ellos de la que se disponga; o informar a los usuarios de qué usos se da a los datos recopilados, tanto del propio servicio como de terceros con los que se pueda compartir dicha información.
 	
-	La GDPR ha supuesto un importante precedente a nivel mundial en la regulación de la protección de datos. Es de esperar que a lo largo de los próximos años proliferen iniciativas como esta más allá de la Unión Europea. Pero, a pesar de esta actualización de las leyes a los nuevos paradigmas que brinda el ciberespacio, los avances en tecnología, como el IoT, siempre son más rápidos que la publicación de leyes y regulaciones. Para mantener los derechos de los usuarios y de la población en general, leyes como la GDPR deben estar en constante movimiento, adaptándose a los vertiginosos cambios que se dan en nuestro día a día gracias a los avances tecnológicos.
+	La GDPR ha supuesto un importante precedente a nivel mundial en la regulación de la protección de datos. Es de esperar que a lo largo de los próximos años proliferen iniciativas como esta más allá de la Unión Europea. Pero, a pesar de esta actualización de las leyes a los nuevos paradigmas que brinda el ciberespacio, los avances en tecnología, como el IoT, siempre son más rápidos que la publicación de leyes y regulaciones. Para mantener los derechos de los usuarios, y de la población en general, leyes como la GDPR deben estar en constante movimiento, adaptándose a los vertiginosos cambios que se dan en nuestro día a día gracias a los avances tecnológicos.
 	
 	\section{Esquema de este documento}
 	
@@ -444,9 +444,9 @@ hmargin=3cm
 	
 	En la introducción se expone un contexto general del problema que este trabajo trata de resolver.
 	
-	En el capítulo segundo, \textit{Estado del Arte}, se habla de la base sobre la que se parte en la investigación: tecnologías presentes, alternativas actuales a la solución propuesta y análisis del elemento fundamental de la arquitectura protagonista: el VCO en anillo.
+	En el capítulo segundo, \textit{Estado del Arte}, se habla de la base sobre la que se parte en la investigación: tecnologías presentes, alternativas actuales a la solución propuesta, y análisis del elemento fundamental de la arquitectura protagonista: el VCO en anillo.
 	
-	En el capítulo tercero se encuentra el grueso del trabajo realizado, que es la propuesta realizada, su análisis teórico y su análisis práctico, así como problemas encontrados, un extenso comentario de los resultados y posibles caminos de investigación futura.
+	En el capítulo tercero se encuentra el grueso del trabajo realizado, que es la propuesta realizada, su análisis teórico y su análisis práctico, así como problemas encontrados, un extenso comentario de los resultados, y posibles caminos de investigación futura.
 	
 	En el capítulo cuarto, hablamos de un prototipo real construido para probar la arquitectura más allá del plano teórico.
 	
@@ -469,7 +469,7 @@ hmargin=3cm
 
 	\footnotetext{Fuente: \url{http://ece-research.unm.edu/jimp/vlsi/slides/chap2_1.html} }
 	
-	Un transistor MOSFET es un tipo de transistor que se usa para amplificar y conmutar señales eléctricas dentro de un circuito. Se compone de cuatro entradas: fuente, puerta, drenador y sustrato, que normalmente está conectado a la fuente para evitar la modulación de la tensión de corte. Cuando se aplica un voltaje entre la puerta y la fuente, se crea un canal en el medio semiconductor que permite el paso de corriente entre la fuente y el drenador. Podemos distinguir dos tipos de transistores MOS: los canal-n y los canal-p, dependiendo del dopaje del silicio usado en su fabricación. Los canal-n tienen un dopaje negativo en el silicio de la fuente y el drenador, que se consigue añadiendo impurezas de un elemento como fósforo, dejando electrones libres que actúan como portadores de carga. En el caso de los canal-p, se dopan con elementos como boro, que dejan huecos (ausencia de electrones en capas de valencia) y estos actúan como portadores de carga.
+	Un transistor MOSFET es un tipo de transistor que se usa para amplificar y conmutar señales eléctricas dentro de un circuito. Se compone de cuatro entradas: fuente, puerta, drenador, y sustrato, que normalmente está conectado a la fuente para evitar la modulación de la tensión de corte. Cuando se aplica un voltaje entre la puerta y la fuente, se crea un canal en el medio semiconductor que permite el paso de corriente entre la fuente y el drenador. Podemos distinguir dos tipos de transistores MOS: los canal-n y los canal-p, dependiendo del dopaje del silicio usado en su fabricación. Los canal-n tienen un dopaje negativo en el silicio de la fuente y el drenador, que se consigue añadiendo impurezas de un elemento como fósforo, dejando electrones libres que actúan como portadores de carga. En el caso de los canal-p, se dopan con elementos como boro, que dejan huecos (ausencia de electrones en capas de valencia), y estos actúan como portadores de carga.
 	
 	Estos son los símbolos más usados para representar transistores MOS:
 	
@@ -489,7 +489,7 @@ hmargin=3cm
 
 	\footnotetext{Fuente: \cite{aicd}}
 
-	El comportamiento general de este tipo de transistores se modela a través de regiones de funcionamiento, que dependen del voltaje $V_{GS}$ o voltaje entre puerta y fuente.
+	El comportamiento general de este tipo de transistores se modela a través de regiones de funcionamiento, que dependen del voltaje $V_{GS}$, o voltaje entre puerta y fuente.
 	La siguiente tabla describe esta relación para un transistor tipo n. Para un tipo p, las reglas aplican igual, invirtiendo el signo de los voltajes.
 	
 	\begin{table}[H]\caption{Regiones de funcionamiento de un transistor MOS canal-n}\label{tb:n-channel-regions}
@@ -506,9 +506,9 @@ hmargin=3cm
 		\end{tabular}
 	\end{table}
 
-	Siendo $V_{T}$ el voltaje límite y $V_{DS}$ el voltaje entre drenador y fuente. El voltaje límite es voltaje mínimo necesario para la aparición de un canal entre la fuente y el drenador. Depende de parámetros de fabricación, como el ancho de la capa de óxido y su material y de parámetros de funcionamiento, como la temperatura y el voltaje del sustrato (por el llamado \textit{efecto cuerpo}\footnote{El efecto cuerpo relaciona el voltaje de sustrato con el voltaje límite. Un cambio en el voltaje de sustrato conlleva un cambio de similar valor en el voltaje límite.}).
+	Siendo $V_{T}$ el voltaje límite y $V_{DS}$ el voltaje entre drenador y fuente. El voltaje límite es voltaje mínimo necesario para la aparición de un canal entre la fuente y el drenador. Depende de parámetros de fabricación, como el ancho de la capa de óxido y su material, y de parámetros de funcionamiento, como la temperatura y el voltaje del sustrato (por el llamado \textit{efecto cuerpo}\footnote{El efecto cuerpo relaciona el voltaje de sustrato con el voltaje límite. Un cambio en el voltaje de sustrato conlleva un cambio de similar valor en el voltaje límite.}).
 	
-	En la región de corte, no existe canal entre fuente y drenador, así que no se permite el paso de corriente entre ambos. En la región lineal u óhmica, el canal aparece, pero ofrece una cierta impedancia al paso de corriente, de tal manera que el transistor se comporta como una resistencia que disminuye según aumenta $V_{GS}$ con respecto a $V_{DS} + V_{T}$. En la región de saturación el canal permite el paso libre de corriente y deja de ser dependiente de la relación de voltaje entre $V_{GS}$ y $V_{DS} + V_{T}$.
+	En la región de corte, no existe canal entre fuente y drenador, así que no se permite el paso de corriente entre ambos. En la región lineal u óhmica, el canal aparece, pero ofrece una cierta impedancia al paso de corriente, de tal manera que el transistor se comporta como una resistencia que disminuye según aumenta $V_{GS}$ con respecto a $V_{DS} + V_{T}$. En la región de saturación el canal permite el paso libre de corriente, y deja de ser dependiente de la relación de voltaje entre $V_{GS}$ y $V_{DS} + V_{T}$.
 	
 	\section{Tecnología CMOS}
 	
@@ -543,7 +543,7 @@ hmargin=3cm
 	
 	\begin{description}[font=\bfseries, style=multiline, align=left, before={\renewcommand\makelabel[1]{\bfseries ##1:}}]
 		\item[Frecuencia de muestreo] Frecuencia a la cual se toman medidas de la señal original. Determinado por el ancho de banda de la aplicación.
-		\item[Ancho de banda] Rango de frecuencias de la señal original que puede ser correctamente muestreada, cuantizada y posteriormente recreada. 
+		\item[Ancho de banda] Rango de frecuencias de la señal original que puede ser correctamente muestreada, cuantizada, y posteriormente recreada. 
 		\item[Resolución] Número de pasos máximo entre rango de valores de la señal analógica. Determina el error de cuantificación y el SNR máximo.
 		\item[SNR] La Signal-to-Noise Ratio, o Relación Señal-Ruido, es la relación entre la potencia de la señal transmitida y la potencia del ruido presente en dicha señal. Normalmente se representa en dB. 
 			\begin{figure}[H]
@@ -595,7 +595,7 @@ hmargin=3cm
 	
 	\section{Modulación sigma-delta en ADCs}
 	
-	Un ADC que utiliza el principio de modulación sigma-delta, también llamado \textit{modulador sigma-delta} o \textit{modulador \sigmadelta}, tiene como bloques principales un negador, un integrador y un cuantificador, además de un bucle de realimentación. Este es el esquema de bloques básico de un modulador \sigmadelta:
+	Un ADC que utiliza el principio de modulación sigma-delta, también llamado \textit{modulador sigma-delta}, o \textit{modulador \sigmadelta}, tiene como bloques principales un negador, un integrador, y un cuantificador, además de un bucle de realimentación. Este es el esquema de bloques básico de un modulador \sigmadelta:
 	
 	\begin{figure}[H]
 		\includegraphics[width=0.6\textwidth]{sigma-delta-blocks.png}
@@ -632,7 +632,7 @@ hmargin=3cm
 	
 	Como se puede observar, ambas opciones trabajan en ámbito analógico.
 	
-	Las principales desventajas de la conversión por modulador \sigmadelta son la necesidad de una frecuencia de muestreo muy alta respecto a la original, lo cual es un problema a la hora de convertir señales de muy alta frecuencia y que gran parte del circuito funciona con señales analógicas, lo que complica la implementación en arquitecturas de muy bajo tamaño
+	Las principales desventajas de la conversión por modulador \sigmadelta son la necesidad de una frecuencia de muestreo muy alta respecto a la original, lo cual es un problema a la hora de convertir señales de muy alta frecuencia, y que gran parte del circuito funciona con señales analógicas, lo que complica la implementación en arquitecturas de muy bajo tamaño
 	
 	\section{VCO en anillo}
 	
@@ -647,7 +647,7 @@ hmargin=3cm
 		\label{fig:inverter-symbol.png}
 	\end{figure}
 	
-	Así se consigue un inversor en tecnología CMOS. El transistor superior es de canal-p y el inferior es de canal-n.
+	Así se consigue un inversor en tecnología CMOS. El transistor superior es de canal-p, y el inferior es de canal-n.
 	\begin{figure}[H]
 		\includegraphics[width=0.4\textwidth]{inverter-sch.png}
 		\caption[Esquemático de una puerta inversora con transistores MOS]{Esquemático de una puerta inversora con transistores MOS}
@@ -684,7 +684,7 @@ hmargin=3cm
 		\label{fig:vco-sch.png}
 	\end{figure}
 	
-	El número impar de puertas inversoras provoca un estado de inestabilidad en el oscilador. Hay una pequeña demora en la activación de las puertas por efecto de las corrientes parásitas, que retrasan el cambio de voltaje y por tanto el cambio de región de operación del transistor. La realimentación positiva en el anillo hace que se creen señales alternativas entre un 1 lógico y un 0 lógico entre la entrada y la salida de cada puerta. La frecuencia a la que estas señales cambian es proporcional al voltaje aplicado en la alimentación de las puertas (VCC en la figuras \ref{fig:inverter-symbol.png} y \ref{fig:inverter-sch.png}). La frecuencia de oscilación sigue la siguiente fórmula:
+	El número impar de puertas inversoras provoca un estado de inestabilidad en el oscilador. Hay una pequeña demora en la activación de las puertas por efecto de las corrientes parásitas, que retrasan el cambio de voltaje, y por tanto el cambio de región de operación del transistor. La realimentación positiva en el anillo hace que se creen señales alternativas entre un 1 lógico y un 0 lógico entre la entrada y la salida de cada puerta. La frecuencia a la que estas señales cambian es proporcional al voltaje aplicado en la alimentación de las puertas (VCC en la figuras \ref{fig:inverter-symbol.png} y \ref{fig:inverter-sch.png}). La frecuencia de oscilación sigue la siguiente fórmula:
 	
 	\begin{figure}[H]
 		\begin{equation}
@@ -707,9 +707,9 @@ hmargin=3cm
 	\end{figure}
 	\footnotetext{Fuente: \cite{eric-thesis}}
 	
-	Donde $f_{VCO}$ es la frecuencia del oscilador, $f_{0}$ es la frecuencia en reposo (con una señal de entrada equivalente a 0), $K_{VCO}$ es la ganancia intrínseca en $Hz/V$ y $V_{i}$ es el valor de voltaje de entrada.
+	Donde $f_{VCO}$ es la frecuencia del oscilador, $f_{0}$ es la frecuencia en reposo (con una señal de entrada equivalente a 0), $K_{VCO}$ es la ganancia intrínseca en $Hz/V$, y $V_{i}$ es el valor de voltaje de entrada.
 	
-	Viendo el oscilador como un integrador y tomando la fase de la señal como salida, en vez de la frecuencia, hacemos el siguiente análisis:
+	Viendo el oscilador como un integrador, y tomando la fase de la señal como salida, en vez de la frecuencia, hacemos el siguiente análisis:
 	
 	\begin{figure}[H]
 		\begin{equation}
@@ -783,13 +783,13 @@ hmargin=3cm
 	Las soluciones más comunes a este problema son:
 	
 	\begin{itemize}
-		\item Calibración Digital: Se hace un análisis de la curva de respuesta, se crea una tabla de mapeo entrada-salida y por se hace la corrección por interpolación en un circuito digital. Aumenta mucho el área ocupada y el consumo.
+		\item Calibración Digital: Se hace un análisis de la curva de respuesta, se crea una tabla de mapeo entrada-salida, y por se hace la corrección por interpolación en un circuito digital. Aumenta mucho el área ocupada y el consumo.
 		
 		\item Modulación previa al VCO: Se coloca un modulador, habitualmente de tipo PWM, para limitar la frecuencia de oscilación de la señal que entra en el VCO. Es una solución más sencilla, pero el modulador PWM consume mucho y puede presentar no linealidad, así que el problema se mueve de componente, pero no se elimina de todo el sistema.
 		
 		\item Reducción de la señal de entrada: Si se consigue lo suficiente, se reduce el impacto de la amplitud de la señal en la linealidad del sistema. Algunas maneras usadas para esto son la inclusión de un ADC más básico antes del VCO, cuya señal se resta a la entrada. Así se consigue disminuir la amplitud de la señal que entra al VCO. Este método necesita de un ADC extra, con el consecuente aumento en consumo y espacio ocupado.
 		
-		\item Ajuste por circuito: Ajustando individualmente la alimentación de las puertas con componentes pasivos se puede paliar la no linealidad, pero esta técnica pierde fiabilidad una vez se toman en cuenta los errores de fabricación, la temperatura y pequeñas variaciones en voltaje de alimentación.
+		\item Ajuste por circuito: Ajustando individualmente la alimentación de las puertas con componentes pasivos se puede paliar la no linealidad, pero esta técnica pierde fiabilidad una vez se toman en cuenta los errores de fabricación, la temperatura, y pequeñas variaciones en voltaje de alimentación.
 	\end{itemize}
 	
 	Ninguna de las soluciones anteriores es perfecta.
@@ -802,9 +802,9 @@ hmargin=3cm
 	
 	La idea fundamental de esta nueva arquitectura es, partiendo de un sistema de ADC por VCO en bucle abierto, estudiar la viabilidad de linealizar la respuesta mediante un bucle de realimentación, haciendo uso de la ganancia intrínseca de la dispone el propio oscilador. Esto eliminaría la necesidad de un amplificador operacional presente en las arquitecturas de VCO con realimentación existentes hoy en día, rebajando por tanto el número de componentes necesarios y el consumo total del sistema.
 	
-	La idea principal de esta arquitectura viene de publicaciones que ya hacen uso de un bucle de realimentación con DAC de 1 bit controlado por frecuencia. En esta publicación: \textit{VCO-ADC linearization by switched capacitor frequency-to-current conversion}\cite{vco-adc-ruben-eric} ya se destacan los beneficios de un ADC por VCO con realimentación, principalmente la linealización de la respuesta del VCO. Otros beneficios al usar realimentación son una mayor resistencia al ruido por jitter del reloj, mayor resistencia al ruido térmico de los componentes pasivos y una mejora importante de la relación señal-ruido con respecto a un ADC VCO en bucle abierto. El problema de la arquitectura propuesta en la publicación es que no consigue prescindir de un amplificador operacional, que es difícil de diseñar con procesos pequeños (<40nm), por no conseguirse suficiente ganancia con el voltaje operativo con el que se trabaja a esas escalas.
+	La idea principal de esta arquitectura viene de publicaciones que ya hacen uso de un bucle de realimentación con DAC de 1 bit controlado por frecuencia. En esta publicación: \textit{VCO-ADC linearization by switched capacitor frequency-to-current conversion}\cite{vco-adc-ruben-eric} ya se destacan los beneficios de un ADC por VCO con realimentación, principalmente la linealización de la respuesta del VCO. Otros beneficios al usar realimentación son una mayor resistencia al ruido por jitter del reloj, mayor resistencia al ruido térmico de los componentes pasivos, y una mejora importante de la relación señal-ruido con respecto a un ADC VCO en bucle abierto. El problema de la arquitectura propuesta en la publicación es que no consigue prescindir de un amplificador operacional, que es difícil de diseñar con procesos pequeños (<40nm), por no conseguirse suficiente ganancia con el voltaje operativo con el que se trabaja a esas escalas.
 	
-	En este estudio, exploraremos la posibilidad de usar la ganancia intrínseca del VCO para poder eliminar el amplificador operacional, para reducir el consumo y el tamaño del ADC y abrir su uso a nuevas aplicaciones que requieren de una gran miniaturización y eficiencia.
+	En este estudio, exploraremos la posibilidad de usar la ganancia intrínseca del VCO para poder eliminar el amplificador operacional, para reducir el consumo y el tamaño del ADC, y abrir su uso a nuevas aplicaciones que requieren de una gran miniaturización y eficiencia.
 	
 	
 	\section{Análisis matemático del VCO con realimentación negativa}
@@ -834,7 +834,7 @@ hmargin=3cm
 		\end{equation}
 	\end{figure}
 	
-	Donde $Y(s)$ es la señal de salida, $X(s)$ es la señal de entrada, $K_{VCO}$ es la ganancia del VCO, $\beta$ es la ganancia del lazo de realimentación y $( Q(s) + D(s) )$ es el ruido de cuantificación y el ruido de no linealidad, respectivamente, modelados como señales que se suman a la salida del VCO.
+	Donde $Y(s)$ es la señal de salida, $X(s)$ es la señal de entrada, $K_{VCO}$ es la ganancia del VCO, $\beta$ es la ganancia del lazo de realimentación, y $( Q(s) + D(s) )$ es el ruido de cuantificación y el ruido de no linealidad, respectivamente, modelados como señales que se suman a la salida del VCO.
 	
 	Respecto a los términos a la derecha de la ecuación superior, podemos deducir el siguiente comportamiento del sistema en función de la frecuencia:
 	
@@ -862,7 +862,7 @@ hmargin=3cm
 
 	Así, tenemos que a altas frecuencias, el coeficiente de $Q(s)$ aumenta y el de $X(s)$ disminuye. A bajas frecuencias, ocurre lo contrario. Por lo tanto, este sistema aplica un filtro paso alto a $Q(s)$ y un filtro paso bajo a $X(s)$. Esto discrimina el ruido de cuantificación y el de linealidad en la banda de frecuencias de la señal de entrada. Para aumentar la SNR\footnote{Signal to Noise Ratio: ratio entre la señal y el ruido} necesitamos pues un valor alto de ganancia $\beta$ en la realimentación, para que este filtro paso bajo tenga mayor magnitud y mayor potencia.
 	
-	En cuanto a la linealidad del sistema: partimos de un DAC que recoge la frecuencia de salida del VCO y la convierte en corriente. Esta conversión debe ser lineal. Esta corriente se resta a la entrada. Integrando esta diferencia (a través del VCO), tiende a cero. Cuando la resta es cero, las señales de entrada y del bucle son iguales y si la corriente que sale del DAC es lineal con respecto a la frecuencia es lineal, con lo que la corriente de entrada del sistema también es lineal.  Así que consiguiendo un DAC que realice la conversión con un buen nivel de linealidad dentro del ancho de banda de interés, resolvemos el problema de la linealidad en el VCO.
+	En cuanto a la linealidad del sistema: partimos de un DAC que recoge la frecuencia de salida del VCO y la convierte en corriente. Esta conversión debe ser lineal. Esta corriente se resta a la entrada. Integrando esta diferencia (a través del VCO), tiende a cero. Cuando la resta es cero, las señales de entrada y del bucle son iguales, y si la corriente que sale del DAC es lineal con respecto a la frecuencia es lineal, con lo que la corriente de entrada del sistema también es lineal.  Así que consiguiendo un DAC que realice la conversión con un buen nivel de linealidad dentro del ancho de banda de interés, resolvemos el problema de la linealidad en el VCO.
 	
 	\subsection{Lazo de realimentación por capacidades conmutadas}
 	
@@ -877,7 +877,7 @@ hmargin=3cm
 		\label{fig:sw-capacities-sch.png}
 	\end{figure}
 	
-	El circuito consta de dos transistores CMOS, canal-n y canal-p y un condensador conectado entre fuente y drenador de los transistores. La fuente de alimentación $V4$ se conecta a la fuente del transistor canal-p y la señal modulada en PFM\footnote{Pulse Frequency Modulation, modulación en frecuencia.} se conecta a las puertas de ambos transistores. La señal PFM actúa a modo de reloj para controlar la activación de los transistores, que actúan a modo de interruptores.
+	El circuito consta de dos transistores CMOS, canal-n y canal-p, y un condensador conectado entre fuente y drenador de los transistores. La fuente de alimentación $V4$ se conecta a la fuente del transistor canal-p, y la señal modulada en PFM\footnote{Pulse Frequency Modulation, modulación en frecuencia.} se conecta a las puertas de ambos transistores. La señal PFM actúa a modo de reloj para controlar la activación de los transistores, que actúan a modo de interruptores.
 	
 	Este es el diagrama simbólico del sistema:
 	
@@ -896,7 +896,7 @@ hmargin=3cm
 		\caption[Diagrama para $\Phi=1$]{Diagrama para $\Phi=1$}
 		\label{fig:sw-capacities-symbol-2.png}
 	\end{figure}
-	Para $\Phi = 1$ y $\hat{\Phi} = 0$, el transistor superior se activa cerrando el circuito y el inferior se desactiva abriéndolo. Esto permite el paso de corriente momentáneo al condensador $C$, que durante este semiperiodo se carga.
+	Para $\Phi = 1$ y $\hat{\Phi} = 0$, el transistor superior se activa cerrando el circuito, y el inferior se desactiva abriéndolo. Esto permite el paso de corriente momentáneo al condensador $C$, que durante este semiperiodo se carga.
 	
 	\begin{figure}[H]
 		\includegraphics[width=0.4\textwidth]{sw-capacities-symbol-3.png}
@@ -934,7 +934,7 @@ hmargin=3cm
 	
 	Así obtenemos una resistencia variable proporcional a la frecuencia de entrada, con la que podemos obtener la corriente proporcional a la frecuencia del VCO para nuestro bucle de realimentación.
 	
-	Debemos tener en cuenta que los transistores tienen unas ciertas corrientes parasíticas fuera de su modelo ideal. Estas corrientes provocan que un transistor abierto tenga una impedancia muy alta, pero no cero y uno cerrado tenga una impedancia muy baja, pero nunca nula. Relacionando este paso de corriente por los transistores con un voltaje de referencia, podemos modelar los efectos parasíticos como una impedancia intrínseca en los transistores.
+	Debemos tener en cuenta que los transistores tienen unas ciertas corrientes parasíticas fuera de su modelo ideal. Estas corrientes provocan que un transistor abierto tenga una impedancia muy alta, pero no cero, y uno cerrado tenga una impedancia muy baja, pero nunca nula. Relacionando este paso de corriente por los transistores con un voltaje de referencia, podemos modelar los efectos parasíticos como una impedancia intrínseca en los transistores.
 	
 	Este es el circuito equivalente:
 	\begin{figure}[H]
@@ -943,7 +943,7 @@ hmargin=3cm
 		\label{fig:sw-capacities-var-res-block.png}
 	\end{figure}
 	
-	Donde $Z_{eq}$ es la impedancia variable equivalente y $Z_{on}$ y $Z_{off}$ son las impedancias de transistor activado y en corte. Como se abren y cierran de manera alternativa y asumiendo un comportamiento ideal del sistema (activación/desactivación instantánea, sin solapamiento), el circuito equivalente tendrá una impedancia de cada en serie. Estas impedancias de los transistores dependen de factores como tecnología de fabricación, tamaño y defectos de fabricación. En cualquier caso, $Z_{on}$ es muy bajo y $Z_{off}$ es muy alto.
+	Donde $Z_{eq}$ es la impedancia variable equivalente, y $Z_{on}$ y $Z_{off}$ son las impedancias de transistor activado y en corte. Como se abren y cierran de manera alternativa, y asumiendo un comportamiento ideal del sistema (activación/desactivación instantánea, sin solapamiento), el circuito equivalente tendrá una impedancia de cada en serie. Estas impedancias de los transistores dependen de factores como tecnología de fabricación, tamaño, y defectos de fabricación. En cualquier caso, $Z_{on}$ es muy bajo, y $Z_{off}$ es muy alto.
 	
 	Queda este modelo ideal para el DAC por capacidades conmutadas:
 	
@@ -960,7 +960,7 @@ hmargin=3cm
 	
 	\section{Simulaciones del modelo}
 	
-	Tras el análisis matemático expuesto en las secciones anteriores, procedemos a realizar simulaciones para comprobar la validez de la arquitectura. Usaremos LTSpice para elaborar esquemáticos y lanzar simulaciones y Matlab/Octave para analizar los resultados.
+	Tras el análisis matemático expuesto en las secciones anteriores, procedemos a realizar simulaciones para comprobar la validez de la arquitectura. Usaremos LTSpice para elaborar esquemáticos y lanzar simulaciones, y Matlab/Octave para analizar los resultados.
 	
 	En estas simulaciones se han usado las librerías de transistores CMOS de la compañía TSMC, públicas y disponibles en internet. Estas librerías tienen los parámetros necesarios para poder simular su comportamiento en un programa SPICE.
 	
@@ -985,7 +985,7 @@ hmargin=3cm
 		\end{equation}
 	\end{figure}
 	
-	Donde $t$ es el tiempo en cada paso de la simulación, $f_{init}$ es la frecuencia en $t=0$ del sistema, $f_{gain}$ es un parámetro que dicta el incremento de la frecuencia por unidad de tiempo y $V_{offset}$ es el voltaje medio de la fuente. Las entrada de este circuito es $f_{gain}$ y el voltaje nominal del reloj $clk\_v$. Además, para que el 0 lógico del reloj tenga un voltaje igual a cero, hay una resistencia \textit{pull-down} justo antes de la salida.
+	Donde $t$ es el tiempo en cada paso de la simulación, $f_{init}$ es la frecuencia en $t=0$ del sistema, $f_{gain}$ es un parámetro que dicta el incremento de la frecuencia por unidad de tiempo, y $V_{offset}$ es el voltaje medio de la fuente. Las entrada de este circuito es $f_{gain}$ y el voltaje nominal del reloj $clk\_v$. Además, para que el 0 lógico del reloj tenga un voltaje igual a cero, hay una resistencia \textit{pull-down} justo antes de la salida.
 	
 	Para comprobar que el componente funciona, a continuación se presenta una simulación rápida. Los valores de las variables para esta simulación son los siguientes:
 	\begin{table}[H]
@@ -1008,7 +1008,7 @@ hmargin=3cm
 		\label{fig:clk-freq-sim-waveform.PNG}
 	\end{figure}
 	
-	Se puede observar que la forma de onda del reloj es cuadrada y va aumentando según pasa el tiempo de simulación. Haciendo zoom en una zona cualquiera y tomando medidas, podemos calcular la frecuencia de reloj en función de $1/T$:
+	Se puede observar que la forma de onda del reloj es cuadrada, y va aumentando según pasa el tiempo de simulación. Haciendo zoom en una zona cualquiera, y tomando medidas, podemos calcular la frecuencia de reloj en función de $1/T$:
 
 	\begin{figure}[H]
 		\includegraphics[width=1\textwidth]{clk-freq-sim-waveform-zoom.PNG}
@@ -1027,15 +1027,15 @@ hmargin=3cm
 		\end{equation}
 	\end{figure}
 
-	A la vista queda una cierta discrepancia entre valores. Esto se debe a falta de precisión absoluta en la simulación y a errores en la toma de medidas de manera visual.
+	A la vista queda una cierta discrepancia entre valores. Esto se debe a falta de precisión absoluta en la simulación, y a errores en la toma de medidas de manera visual.
 	
-	Es necesario un método que permita el análisis de los datos de manera programática y no manual. Ya que LTSpice permite exportar las formas de onda como matriz de puntos x-y, podemos usar Matlab/Octave para el análisis.
+	Es necesario un método que permita el análisis de los datos de manera programática, y no manual. Ya que LTSpice permite exportar las formas de onda como matriz de puntos x-y, podemos usar Matlab/Octave para el análisis.
 	
 	\subsubsection{Procesado de formas de onda en Matlab/Octave}
 	
 	Partiendo de la matriz de puntos x-y (voltaje-tiempo) de la simulación del apartado anterior, nuestro objetivo es producir una recta frecuencia-tiempo.
 	
-	Para calcular el periodo en función del tiempo, hacemos una función que guarde el tiempo en que cada periodo comienza, atravesando un threshold y con el periodo calcularemos su inversa, que es la frecuencia.
+	Para calcular el periodo en función del tiempo, hacemos una función que guarde el tiempo en que cada periodo comienza, atravesando un threshold, y con el periodo calcularemos su inversa, que es la frecuencia.
 	
 	Encontramos un problema al analizar el dataset: el paso de simulación es variable, lo que significa que los puntos no están uniformemente espaciados con respecto al tiempo, así que primero debemos limpiar estos datos. Generamos un vector de tiempos con el rango del dataset de simulación, e interpolamos los datos originales para sacar el valor de V que corresponde a cada tiempo. Esto genera un cierto error de resolución, pero veremos que para nuestro caso es despreciable.
 	
@@ -1073,7 +1073,7 @@ plot(Tperiods(:,2), freqs_ordered)
 		\label{fig:ml-clk-freq-curve.png}
 	\end{figure}
 
-	Salvo errores de resolución por ser un dataset discreto y finito, la curva coincide con el resultado esperado. Queda demostrado que el reloj de frecuencia variable funciona y las ecuaciones que describen su comportamiento son las expuestas en \ref{eq:clk-freq_eqs_freq}.
+	Salvo errores de resolución por ser un dataset discreto y finito, la curva coincide con el resultado esperado. Queda demostrado que el reloj de frecuencia variable funciona, y las ecuaciones que describen su comportamiento son las expuestas en \ref{eq:clk-freq_eqs_freq}.
 	
 	Para las demás simulaciones se usarán scripts muy similares, ya que también estaremos analizando ondas cuadradas cuyo parámetro de interés es la frecuencia.	
 
@@ -1109,7 +1109,7 @@ plot(Tperiods(:,2), freqs_ordered)
 		\label{fig:dac-graph-waveform.png}
 	\end{figure}
 
-	La señal azul corresponde al reloj de frecuencia variable y la señal verde es la corriente que circula por el transitor inferior (canal-n) hacia tierra. Medimos en este punto porque en el lazo de realimentación del VCO conectaremos este nodo donde ahora está la tierra a la señal de entrada.
+	La señal azul corresponde al reloj de frecuencia variable, y la señal verde es la corriente que circula por el transitor inferior (canal-n) hacia tierra. Medimos en este punto porque en el lazo de realimentación del VCO conectaremos este nodo donde ahora está la tierra a la señal de entrada.
 	
 	Para obtener la curva de respuesta de este DAC, debemos analizar la forma de onda para relacionar la frecuencia del reloj con la corriente media. Usamos de nuevo el código del apartado \ref{lst:code-clk-var} para obtener los periodos de la señal del reloj. Para obtener la corriente media en cada periodo, haremos la media de los puntos del vector de corriente normalizado (uniformemente espaciado) entre cada uno de los puntos de comienzo de período.
 	
@@ -1132,9 +1132,9 @@ end
 		\label{fig:dac-sim-graph.png}
 	\end{figure}
 
-	La gráfica azul representa la curva frecuencia-corriente media tal y como se ha procesado con el script expuesto más arriba. En rojo, se ha hecho una regresión lineal de dicha curva. Se puede observar una gran cantidad de ruido en la curva. Esto es así por varios motivos: los ciclos de carga y descarga del condensador (en este caso, capacitancia intrínseca de los transistores) no se simulan correctamente, apareciendo picos de descarga que no se corresponden con la realidad (observar los tres picos de la curva azul). Más allá de esto, la exactitud de la simulación viene de la mano del paso de simulación: a más frecuencia del reloj, menor paso de simulación se necesita para poder muestrear correctamente las señales de interés. Esto supone un problema por limitaciones de hardware: la simulación puede llegar rápidamente a ocupar decenas de gigabytes de memoria RAM y otros tantos de disco. Las simulaciones expuestas en esta memoria se han llevado a cabo intentando explotar al máximo el hardware disponible para obtener la mayor exactitud posible, pero aún así ha sido inevitable la aparición de ruido como en la gráfica superior.
+	La gráfica azul representa la curva frecuencia-corriente media tal y como se ha procesado con el script expuesto más arriba. En rojo, se ha hecho una regresión lineal de dicha curva. Se puede observar una gran cantidad de ruido en la curva. Esto es así por varios motivos: los ciclos de carga y descarga del condensador (en este caso, capacitancia intrínseca de los transistores) no se simulan correctamente, apareciendo picos de descarga que no se corresponden con la realidad (observar los tres picos de la curva azul). Más allá de esto, la exactitud de la simulación viene de la mano del paso de simulación: a más frecuencia del reloj, menor paso de simulación se necesita para poder muestrear correctamente las señales de interés. Esto supone un problema por limitaciones de hardware: la simulación puede llegar rápidamente a ocupar decenas de gigabytes de memoria RAM, y otros tantos de disco. Las simulaciones expuestas en esta memoria se han llevado a cabo intentando explotar al máximo el hardware disponible para obtener la mayor exactitud posible, pero aún así ha sido inevitable la aparición de ruido como en la gráfica superior.
 	
-	En cualquier caso, se puede ver una tendencia creciente en las medias. A falta de una capacidad de simulación mejor y respaldándonos en las ecuaciones \ref{sw-capacities-eqs}, asumiremos un comportamiento idealmente lineal del DAC por capacidades conmutadas de cara al desarrollo de los siguientes capítulos.
+	En cualquier caso, se puede ver una tendencia creciente en las medias. A falta de una capacidad de simulación mejor, y respaldándonos en las ecuaciones \ref{sw-capacities-eqs}, asumiremos un comportamiento idealmente lineal del DAC por capacidades conmutadas de cara al desarrollo de los siguientes capítulos.
 	
 	\subsection{Modelo sencillo de ADC con VCO, abierto}
 	
@@ -1150,7 +1150,7 @@ end
 	En el centro está el VCO sencillo de cinco puertas, llamadas fases en el caso de un VCO. 
 	
 	
-	Para demodular la señal del VCO (modulada en frecuencia), usamos un circuito de primera diferencia (en la parte inferior del esquemático, tomando la señal entre dos puertas cualquiera del VCO). Esta primera diferencia evalúa la diferencia entre dos señales de salida: una directa (primer flip-flop) y una retrasada un ciclo de reloj (segundo flip-flop). Ambas señales pasan por una puerta XOR para terminar de demodularse. El flujo de pulsos de 1 bit presente en la salida (output) equivale a los flancos de la señal del VCO, muestreados a la frecuencia del reloj conectado a los flip-flops. Así es como se demodula la señal que sale del VCO.
+	Para demodular la señal del VCO (modulada en frecuencia), usamos un circuito de primera diferencia (en la parte inferior del esquemático, tomando la señal entre dos puertas cualquiera del VCO). Esta primera diferencia evalúa la diferencia entre dos señales de salida: una directa (primer flip-flop), y una retrasada un ciclo de reloj (segundo flip-flop). Ambas señales pasan por una puerta XOR para terminar de demodularse. El flujo de pulsos de 1 bit presente en la salida (output) equivale a los flancos de la señal del VCO, muestreados a la frecuencia del reloj conectado a los flip-flops. Así es como se demodula la señal que sale del VCO.
 	
 	Este es el resultado de la simulación:
 	
@@ -1178,7 +1178,7 @@ end
 	
 	\subsection{Modelo de ADC por VCO con bucle cerrado}\label{ss:vco-open}
 	
-	Visto el comportamiento de un VCO en bucle abierto, es el turno de probar cómo se comporta con un bucle de realimentación. Dado que el DAC no invierte la señal de entrada, debemos buscar una solución para hacer negativo el bucle de realimentación. La solución que hemos escogido para llevar esto a cabo es utilizar una estructura pseudodiferencial. Esto quiere decir que replicamos el circuito de VCO, lazo y primera diferencia. Invertimos la señal de entrada en una de las ramas, para que ambos VCO trabajen con señales opuestas y cruzamos los lazos de realimentación. Así conseguimos que que los lazos de realimentación actúen negativamente sobre sus respectivas entradas.
+	Visto el comportamiento de un VCO en bucle abierto, es el turno de probar cómo se comporta con un bucle de realimentación. Dado que el DAC no invierte la señal de entrada, debemos buscar una solución para hacer negativo el bucle de realimentación. La solución que hemos escogido para llevar esto a cabo es utilizar una estructura pseudodiferencial. Esto quiere decir que replicamos el circuito de VCO, lazo, y primera diferencia. Invertimos la señal de entrada en una de las ramas, para que ambos VCO trabajen con señales opuestas, y cruzamos los lazos de realimentación. Así conseguimos que que los lazos de realimentación actúen negativamente sobre sus respectivas entradas.
 	
 	\begin{figure}[H]
 		\includegraphics[width=\textwidth]{ltspice-vco-closed-diff.png}
@@ -1206,7 +1206,7 @@ end
 		\label{fig:ltspice-vco-closed-loop-1.png}
 	\end{figure}
 
-	El bloque anterior conecta con la rama inferior izquierda de este bloque. El condensador aparece para desacoplar la entrada del resto del circuito y evitar interacciones no deseadas entre los componentes. Las resistencias forman un divisor de voltaje que compone el negador, aunque en principio se trate de un sumador entre la señal de entrada y la del lazo de realimentación de la rama opuesta de la estructura pseudodiferencial. El DAC por capacidades conmutadas aparece en la parte superior izquierda. La señal del DAC entra por su parte izquierda y viene del VCO opuesto. La alimentación del DAC viene en su parte superior, de valor 1.8V, conectando con la fuente del transistor canal-p. El condensador entre los drenadores de los transistores es el encargado de lograr el efecto de la capacidad conmutada. La salida de este bloque al siguiente aparece en la esquina superior derecha, inmediatamente después del transistor de 1K.
+	El bloque anterior conecta con la rama inferior izquierda de este bloque. El condensador aparece para desacoplar la entrada del resto del circuito, y evitar interacciones no deseadas entre los componentes. Las resistencias forman un divisor de voltaje que compone el negador, aunque en principio se trate de un sumador entre la señal de entrada y la del lazo de realimentación de la rama opuesta de la estructura pseudodiferencial. El DAC por capacidades conmutadas aparece en la parte superior izquierda. La señal del DAC entra por su parte izquierda, y viene del VCO opuesto. La alimentación del DAC viene en su parte superior, de valor 1.8V, conectando con la fuente del transistor canal-p. El condensador entre los drenadores de los transistores es el encargado de lograr el efecto de la capacidad conmutada. La salida de este bloque al siguiente aparece en la esquina superior derecha, inmediatamente después del transistor de 1K.
 	
 	Entrada al VCO:
 	
@@ -1236,7 +1236,7 @@ end
 		\label{fig:ltspice-vco-closed-diff-module.PNG}
 	\end{figure}
 
-	Como en la sección anterior, \ref{ss:vco-open}, usamos un circuito de primera diferencia para demodular la señal del VCO. Como se observa en la imagen y comparado con el circuito usado en el sistema con lazo abierto, \ref{fig:vco-open-first-diff-sch.png}, esta vez se duplican el número de componentes. Cada una de las ramas, conectada al pin $D$ de los flip-flops situados a la izquierda, necesita su propio demodulador, con su propio reloj. Como las ramas tienen como entradas señales de igual magnitud pero opuestas, los relojes también deben estar invertidos. El cambio más significativo con respecto al circuito \ref{fig:vco-open-first-diff-sch.png} es la inclusión de dos seguidores de tensión, $E1$ y $E2$, que se encargan de sumar las ramas, previa inversión de una de ellas, para compensar el desfase de la señal original. El resultado de todo el sistema aparece en la señal de salida $Y$, en la esquina superior izquierda. Es en este pin $Y$ donde mediremos los resultados en los siguientes apartados.
+	Como en la sección anterior, \ref{ss:vco-open}, usamos un circuito de primera diferencia para demodular la señal del VCO. Como se observa en la imagen, y comparado con el circuito usado en el sistema con lazo abierto, \ref{fig:vco-open-first-diff-sch.png}, esta vez se duplican el número de componentes. Cada una de las ramas, conectada al pin $D$ de los flip-flops situados a la izquierda, necesita su propio demodulador, con su propio reloj. Como las ramas tienen como entradas señales de igual magnitud pero opuestas, los relojes también deben estar invertidos. El cambio más significativo con respecto al circuito \ref{fig:vco-open-first-diff-sch.png} es la inclusión de dos seguidores de tensión, $E1$ y $E2$, que se encargan de sumar las ramas, previa inversión de una de ellas, para compensar el desfase de la señal original. El resultado de todo el sistema aparece en la señal de salida $Y$, en la esquina superior izquierda. Es en este pin $Y$ donde mediremos los resultados en los siguientes apartados.
 	
 	Nótese también que en \ref{fig:ltspice-vco-closed-diff-module.PNG} aparece también la alimentación general del sistema, $V_{dd}$, que abaste al espejo de corriente y al DAC.
 	
@@ -1271,7 +1271,7 @@ end
 		\label{fig:sim-vco-closed-waveform-dem-fft.png}
 	\end{figure}
 	
-	En rojo, tenemos la señal final demodulada $Y$. En azul, tenemos la señal original que entra al sistema. Como se puede observar, hasta el harmónico principal la diferencia entre la señal original y la digitalizada es mínima. A partir de este primer pico, aparecen harmónicos secundarios (marcados con el círculo verde y el número 1) y apartir de 1MGHz, aparece una fuerte distorsión (marcados en verde, con el número 2). La distorsión en 1 corresponde al término $Q(s)$ y $D(s)$ en las ecuaciones \ref{vco-closed-loop-s}.
+	En rojo, tenemos la señal final demodulada $Y$. En azul, tenemos la señal original que entra al sistema. Como se puede observar, hasta el harmónico principal la diferencia entre la señal original y la digitalizada es mínima. A partir de este primer pico, aparecen harmónicos secundarios (marcados con el círculo verde y el número 1), y apartir de 1MGHz, aparece una fuerte distorsión (marcados en verde, con el número 2). La distorsión en 1 corresponde al término $Q(s)$ y $D(s)$ en las ecuaciones \ref{vco-closed-loop-s}.
 	
 	Comparando con la figura \ref{fig:vco-open-first-diff-fft-2.png}, la ganancia del harmónico principal es unos 10dB mayor, acercándose a la señal original. Disminuyen notablemente los harmónicos secundarios también.
 	
@@ -1289,7 +1289,7 @@ end
 		\label{fig:vco-closed-opamp-block.png}
 	\end{figure}
 
-	Optamos por una configuración no inversora, para mantener la estructura pseudiferencial (se podría prescindir de ella en caso de que se use una configuración inversora). Utilizamos un modelo de amplificador operacional de las librerías estándar de LTSpice: un AD8510. Este operacional basado en JFETs está destinado a usos de precisión; es de muy bajo ruido, baja corriente de bias y gran ancho de banda. Utiliza una alimentación raíl a raíl de $\pm$15V. En cuanto a la ganancia aportada por este amplificador, solo hay que elegir las resistencias en función de la clásica fórmula de ganancia no inversora: $G = 1 + \frac{Rin}{Rf}$. Probando diferentes valores, elegimos una ganancia de 4 ($G = 1 + \frac{3k}{1k}$). Si es más baja, los efectos en el sistema son más difíciles de apreciar. Si es mucho más alta, se llega a una saturación en la entrada del VCO, dejando este de funcionar.
+	Optamos por una configuración no inversora, para mantener la estructura pseudiferencial (se podría prescindir de ella en caso de que se use una configuración inversora). Utilizamos un modelo de amplificador operacional de las librerías estándar de LTSpice: un AD8510. Este operacional basado en JFETs está destinado a usos de precisión; es de muy bajo ruido, baja corriente de bias, y gran ancho de banda. Utiliza una alimentación raíl a raíl de $\pm$15V. En cuanto a la ganancia aportada por este amplificador, solo hay que elegir las resistencias en función de la clásica fórmula de ganancia no inversora: $G = 1 + \frac{Rin}{Rf}$. Probando diferentes valores, elegimos una ganancia de 4 ($G = 1 + \frac{3k}{1k}$). Si es más baja, los efectos en el sistema son más difíciles de apreciar. Si es mucho más alta, se llega a una saturación en la entrada del VCO, dejando este de funcionar.
 	
 	Procedemos a simular como de costumbre:
 
@@ -1305,17 +1305,17 @@ end
 		\label{fig:sim-vco-closed-opamp-fft.png}
 	\end{figure}
 
-	La traza verde corresponde a la salida demodulada y la traza azul, a la señal de entrada del sistema. Comparando la FFT \ref{fig:sim-vco-closed-opamp-fft.png} con la FFT del circuito sin amplificador operacional, la distorsión es menor: los picos armónicos alcanzan -40dB, mientras que sin operacional, alcanzan -30dB. En cuanto al conformado espectral de ruido, pasa a una ganancia similar: -40dB, frente a los -30dB del sistema sin ganancia por amplificadores. Queda demostrado que la clave para conseguir un mejor comportamiento (menos ruido espectral) es aumentar la ganancia en el lazo de realimentación.
+	La traza verde corresponde a la salida demodulada, y la traza azul, a la señal de entrada del sistema. Comparando la FFT \ref{fig:sim-vco-closed-opamp-fft.png} con la FFT del circuito sin amplificador operacional, la distorsión es menor: los picos armónicos alcanzan -40dB, mientras que sin operacional, alcanzan -30dB. En cuanto al conformado espectral de ruido, pasa a una ganancia similar: -40dB, frente a los -30dB del sistema sin ganancia por amplificadores. Queda demostrado que la clave para conseguir un mejor comportamiento (menos ruido espectral) es aumentar la ganancia en el lazo de realimentación.
 
 	Habiendo probado que este parámetro es decisivo en las prestaciones de la arquitectura de un ADC VCO con oscilador en anillo, queda como trabajo futuro explorar opciones alternativas al amplificador operacional, como arquitecturas de VCO diferentes (más fases, secciones en paralelo), o sustituir las capacidades conmutadas por otro ADC que permita aumentar de manera significativa su ganancia.
 
 \chapter{Prototipo real}
 
-	En este capítulo, describiremos el prototipo real que se ha construido para probar el funcionamiento de la arquitectura más allá de las simulaciones. La información que aporta un circuito real es valiosa, ya que entran en juego parámetros fundamentales de cara a una aplicación real: defectos y tolerancias de fabricación de los transistores en los chips, variables como la temperatura, las resistencias de las conexiones y secciones de cable, ruidos procedentes de la fuente de alimentación o campos electromagnéticos presentes en el ambiente. Es importante tener en cuenta todos estos factores para poder crear circuitos predecibles, eficientes y fiables en el mundo real.
+	En este capítulo, describiremos el prototipo real que se ha construido para probar el funcionamiento de la arquitectura más allá de las simulaciones. La información que aporta un circuito real es valiosa, ya que entran en juego parámetros fundamentales de cara a una aplicación real: defectos y tolerancias de fabricación de los transistores en los chips, variables como la temperatura, las resistencias de las conexiones y secciones de cable, ruidos procedentes de la fuente de alimentación, o campos electromagnéticos presentes en el ambiente. Es importante tener en cuenta todos estos factores para poder crear circuitos predecibles, eficientes, y fiables en el mundo real.
 	
-	Para construir el prototipo, optamos por un diseño en breadboard. Usamos chips de la familia 74HC en formato DIP para las puertas inversoras del VCO. En concreto, optamos por un SN74HC04AN\footnote{Hoja de especificaciones: \url{https://www.ti.com/lit/ds/symlink/sn74hc04.pdf}}, de Texas Instruments, con seis puertas inversoras independientes y alimentación y masa común. Para el espejo de corriente, elegimos un chip ALD1107\footnote{Hoja de especificaciones: \url{https://www.aldinc.com/pdf/ALD1107.pdf}} de Advanced Linear Devices, que reúne en su interior cuatro transistores MOS canal-p y está diseñado para circuitos con alta ganancia y alta precisión.
+	Para construir el prototipo, optamos por un diseño en breadboard. Usamos chips de la familia 74HC en formato DIP para las puertas inversoras del VCO. En concreto, optamos por un SN74HC04AN\footnote{Hoja de especificaciones: \url{https://www.ti.com/lit/ds/symlink/sn74hc04.pdf}}, de Texas Instruments, con seis puertas inversoras independientes y alimentación y masa común. Para el espejo de corriente, elegimos un chip ALD1107\footnote{Hoja de especificaciones: \url{https://www.aldinc.com/pdf/ALD1107.pdf}} de Advanced Linear Devices, que reúne en su interior cuatro transistores MOS canal-p, y está diseñado para circuitos con alta ganancia y alta precisión.
 	
-	Para cada una de las ramas de la estructura pseudodiferencial, necesitaremos dos chips de inversores y uno de MOSFETs. Uno de los inversores estará dedicado al VCO y otro al DAC del lazo de realimentación. Deben estar separados porque el pin de alimentación del chip del VCO está conectada al espejo de corriente, mientras que la del chip del DAC está conectada a la fuente de alimentación general. Duplicando estos componentes para montar la otra rama, nos quedan cuatro chips de inversores y dos de MOSFETs. Además, necesitamos resistencias y condensadores para el divisor de tensión y la etapa de entrada al sistema.
+	Para cada una de las ramas de la estructura pseudodiferencial, necesitaremos dos chips de inversores y uno de MOSFETs. Uno de los inversores estará dedicado al VCO, y otro al DAC del lazo de realimentación. Deben estar separados porque el pin de alimentación del chip del VCO está conectada al espejo de corriente, mientras que la del chip del DAC está conectada a la fuente de alimentación general. Duplicando estos componentes para montar la otra rama, nos quedan cuatro chips de inversores y dos de MOSFETs. Además, necesitamos resistencias y condensadores para el divisor de tensión y la etapa de entrada al sistema.
 	
 	En las siguientes imágenes se expone el prototipo construido:
 	
@@ -1356,11 +1356,11 @@ end
 
 	Ambas señales están tomadas con una sonda no multiplicadora a la salida del VCO. La señal de entrada está proporcionada por un generador de señal sinusoidal de aproximadamente 1V de voltaje pico a pico. La primera de las imágenes (I) representa la señal del VCO bajo una entrada de unos 100Hz. En pantalla, aparece una traza relativamente limpia; esto indica que el VCO está oscilando a una frecuencia relativamente baja, así tanto el osciloscopio puede capturar la señal sin perder resolución. En la siguiente imagen (II), la frecuencia de la señal de entrada aumenta hasta los 10KHz. En esta, la traza es más borrosa, porque el VCO está oscilando más rápido de lo que el osciloscopio es capaz de leer.
 	
-	A pesar de no haber podido hacer un análisis en profundidad del prototipo por la falta de acceso a aparatos de medición avanzados, es posible ver la forma de onda que produce el oscilador en anillo y cómo esta varía al cambiar los parámetros de entrada (principalmente, la frecuencia de la onda sinusoidal).
+	A pesar de no haber podido hacer un análisis en profundidad del prototipo por la falta de acceso a aparatos de medición avanzados, es posible ver la forma de onda que produce el oscilador en anillo, y cómo esta varía al cambiar los parámetros de entrada (principalmente, la frecuencia de la onda sinusoidal).
 	
 \chapter{Conclusiones y Discusión}
 
-	A lo largo de este estudio, se ha expuesto el trabajo de investigación llevado a cabo para conseguir solucionar el problema de linealidad de una arquitectura de ADC basado en VCO en anillo. Con tal fin, se han hecho estudios matemáticos y numerosas simulaciones con su correspondiente discusión de resultados.
+	A lo largo de este estudio, se ha expuesto el trabajo de investigación llevado a cabo para conseguir solucionar el problema de linealidad de una arquitectura de ADC basado en VCO en anillo. Con tal fin, se han hecho estudios matemáticos, y numerosas simulaciones con su correspondiente discusión de resultados.
 	
 	La interpretación de cada resultado se ha expuesto en su correspondiente apartado, así que este capítulo queda reservado para un análisis a grandes rasgos del resultado global de todo el estudio.
 	
@@ -1368,7 +1368,7 @@ end
 	
 	La conclusión general es sencilla: la ganancia intrínseca del VCO y del DAC no es suficiente para linealizar el circuito por medio de un lazo de realimentación, así que debe proveerse otra fuente de ganancia. 
 	
-	A pesar de ello, llegar hasta esta afirmación ha sido fruto de meses de investigación sobre la materia y esta información, debidamente probada en este documento, será útil para la actividad del próximo que coja el relevo de esta línea de investigación.
+	A pesar de ello, llegar hasta esta afirmación ha sido fruto de meses de investigación sobre la materia, y esta información, debidamente probada en este documento, será útil para la actividad del próximo que coja el relevo de esta línea de investigación.
 	
 	En un aspecto más personal, este trabajo ha cumplido su objetivo: darme la oportunidad de conocer más a fondo un campo del que apenas conocía al inicio de este proyecto. También he podido poner en práctica la herramienta más importante que he adquirido durante la carrera: ganas de no dejar de aprender.
 	
@@ -1420,7 +1420,7 @@ end
 
 \addcontentsline{toc}{chapter}{Bibliografía}
 
-\setquotestyle[british]{english} % Cambiamos el tipo de cita porque en el estilo IEEE se usan las comillas inglesas.
+\setquotestyle[english]{british} % Cambiamos el tipo de cita porque en el estilo IEEE se usan las comillas inglesas.
 \printbibliography
 
 %----------
